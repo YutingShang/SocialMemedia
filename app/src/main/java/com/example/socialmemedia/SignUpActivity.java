@@ -27,7 +27,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     public void openContactList(){
-        Intent intent = new Intent(this, ContactListActivity.class);
+        Intent intent = new Intent(SignUpActivity.this, ContactListActivity.class);
         startActivity(intent);
     }
 }

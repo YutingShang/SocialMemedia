@@ -1,6 +1,10 @@
 package com.example.socialmemedia;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +13,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +25,9 @@ public class ContactListActivity extends AppCompatActivity {
     ArrayAdapter contactsAdapter;
     ArrayList<String> users = new ArrayList<String>(Arrays.asList("Ori","Joe","Ben","Bob","Ned","Tim","Uma","Mia","Edi","Zak","Ali","Tom","Max","Pip","Dan","Kev","Jil","Ido"));
     ImageButton settingsButton;
+    BottomNavigationView navView;
+    AppBarConfiguration appBarConfiguration;
+    NavController navController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,5 +59,12 @@ public class ContactListActivity extends AppCompatActivity {
                 startActivity(intent2);
             }
         });
+
+        navView = findViewById(R.id.bottomNav_view);
+        appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_contactList,R.id.navigation_memeMenu).build();
+        navController = Navigation.findNavController(this,R.id.navHostFragment);
+        NavigationUI.setupActionBarWithNavController(this,navController,appBarConfiguration);
+        NavigationUI.setupWithNavController(navView,navController);
+
     }
 }

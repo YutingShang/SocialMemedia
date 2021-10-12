@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Social Memedia</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_meme_fragment">Hello meme menu fragment</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_contacts_fragment">Hello contact list fragment</string>
 </resources>

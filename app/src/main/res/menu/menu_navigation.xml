@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/contactList"
+        android:title="ContactList"
+        android:icon="@drawable/ic_baseline_chat_bubble"/>
+
+    <item
+        android:id="@+id/memeMenu"
+        android:title="MemeMenu"
+        android:icon="@drawable/ic_baseline_dialpad_menu"/>
+
+
+</menu>

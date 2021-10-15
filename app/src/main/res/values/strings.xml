@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Social Memedia</string>
+    <string name="chatPage">Chat Page</string>
+    <string name="contactListPage">Contact List Page</string>
+    <string name="memeFeedPage">Meme Feed Page</string>
+    <string name="memeMenuPage">Meme Menu Page</string>
+    <string name="settingsPage">Settings Page</string>
+    <string name="signUpPage">Sign Up Page</string>
+    <string name="signOut">Sign Out</string>
+    <string name="signUp">Sign Up</string>
 </resources>

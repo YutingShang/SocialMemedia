@@ -10,7 +10,7 @@
         android:id="@+id/contactListtext"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Contact List page"
+        android:text="@string/contactListPage"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -24,8 +24,8 @@
         android:src="@drawable/ic_baseline_settings_24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="15dp"
-        android:layout_marginRight="15dp"
+        android:layout_marginTop="@dimen/generalSpace"
+        android:layout_marginEnd="@dimen/generalSpace"
         style="?android:borderlessButtonStyle"
         app:tint="@color/fresco_pink" />
 
@@ -49,7 +49,7 @@
         app:itemBackground="@color/tab_color"
         app:itemTextColor="@drawable/selector"
         app:itemIconTint="@drawable/selector"
-        app:itemIconSize="35dp"
+        app:itemIconSize="@dimen/iconSmall"
         app:menu="@menu/menu_navigation"
         app:layout_constraintBottom_toBottomOf="parent"
         app:labelVisibilityMode="unlabeled"

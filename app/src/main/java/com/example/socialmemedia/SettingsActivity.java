@@ -24,6 +24,7 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(SettingsActivity.this, ContactListActivity.class);
                 startActivity(intent);
+                overridePendingTransition(0,0);
             }
         });
 

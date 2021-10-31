@@ -23,6 +23,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ChatActivity.this, ContactListActivity.class);
                 startActivity(intent);
+                overridePendingTransition(0,0);
             }
         });
 

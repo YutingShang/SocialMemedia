@@ -21,7 +21,7 @@ public class ContactListActivity extends AppCompatActivity {
 
     ListView contactListView;
     ArrayAdapter contactsAdapter;
-    ArrayList<String> users = new ArrayList<String>(Arrays.asList("Ori","Joe","Ben","Bob","Ned","Tim","Uma","Mia","Edi","Zak","Ali","Tom","Max","Pip","Dan","Kev","Jil","Ido"));
+    ArrayList<String> users = new ArrayList<String>(Arrays.asList("Joe","Ori","Ben","Bob","Ned","Tim","Uma","Mia","Edi","Zak","Ali","Tom","Max","Pip","Dan","Kev","Jil","Ido"));
     ImageButton settingsButton;
     BottomNavigationView bottomNavigationView;
 
@@ -45,6 +45,7 @@ public class ContactListActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(ContactListActivity.this,ChatActivity.class);
                 startActivity(intent);
+                overridePendingTransition(0,0);
             }
         });
 
@@ -54,6 +55,7 @@ public class ContactListActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent2 = new Intent(ContactListActivity.this, SettingsActivity.class);
                 startActivity(intent2);
+                overridePendingTransition(0,0);
             }
         });
 

@@ -3,5 +3,9 @@
     <dimen name="iconSmall">30dp</dimen>
     <dimen name="iconLarge">50dp</dimen>
     <dimen name="generalSpace">10dp</dimen>
+    <dimen name="cardWidth">150dp</dimen>
+    <dimen name="imageSize">120dp</dimen>
+    <dimen name="elevation">8dp</dimen>
+    <dimen name="textSize">20dp</dimen>
     
 </resources>

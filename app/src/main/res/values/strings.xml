@@ -8,4 +8,6 @@
     <string name="signUpPage">Sign Up Page</string>
     <string name="signOut">Sign Out</string>
     <string name="signUp">Sign Up</string>
+    <string name="signIn">Sign In</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

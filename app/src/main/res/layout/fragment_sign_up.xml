@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".signUpFragment">
+
+
+
+    <EditText
+        android:id="@+id/name_signUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="30dp"
+        android:background="@color/off_white"
+        android:ems="10"
+        android:hint="Name"
+        android:textColor="@color/fresco_blue"
+        android:inputType="text"
+        android:paddingVertical="@dimen/generalSpace"
+        android:paddingLeft="@dimen/generalSpace"
+        android:textColorHint="@color/light_grey"
+        app:layout_constraintBottom_toTopOf="@+id/email_phone_signUp"
+        android:layout_marginBottom="@dimen/generalSpace"/>
+
+    <EditText
+        android:id="@+id/email_phone_signUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="30dp"
+        android:background="@color/off_white"
+        android:ems="10"
+        android:hint="Email/Phone No."
+        android:inputType="text"
+        android:textColor="@color/fresco_blue"
+        android:paddingVertical="@dimen/generalSpace"
+        android:paddingLeft="@dimen/generalSpace"
+        android:textColorHint="@color/light_grey"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/password_signUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="30dp"
+        android:background="@color/off_white"
+        android:ems="10"
+        android:hint="Password"
+        android:textColor="@color/fresco_blue"
+        android:inputType="textPassword"
+        android:paddingVertical="@dimen/generalSpace"
+        android:paddingLeft="@dimen/generalSpace"
+        android:textColorHint="@color/light_grey"
+        app:layout_constraintTop_toBottomOf="@+id/email_phone_signUp"
+        android:layout_marginTop="@dimen/generalSpace"/>
+
+    <Button
+        android:id="@+id/signUpButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/generalSpace"
+        app:backgroundTint="@color/fresco_blue"
+        android:text="@string/signUp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/password_signUp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

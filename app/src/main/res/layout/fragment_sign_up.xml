@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="30dp"
-        android:background="@color/off_white"
+        android:background="@color/transparent_off_white"
         android:ems="10"
         android:hint="Name"
         android:textColor="@color/fresco_blue"
@@ -21,31 +21,33 @@
         android:paddingVertical="@dimen/generalSpace"
         android:paddingLeft="@dimen/generalSpace"
         android:textColorHint="@color/light_grey"
-        app:layout_constraintBottom_toTopOf="@+id/email_phone_signUp"
-        android:layout_marginBottom="@dimen/generalSpace"/>
+        app:layout_constraintBottom_toTopOf="@+id/email_address_signUp"
+        android:layout_marginBottom="@dimen/generalSpace"
+        android:textCursorDrawable="@drawable/custom_edit_text_cursor"/>
 
     <EditText
-        android:id="@+id/email_phone_signUp"
+        android:id="@+id/email_address_signUp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="30dp"
-        android:background="@color/off_white"
+        android:background="@color/transparent_off_white"
         android:ems="10"
-        android:hint="Email/Phone No."
+        android:hint="Email Adress"
         android:inputType="text"
         android:textColor="@color/fresco_blue"
         android:paddingVertical="@dimen/generalSpace"
         android:paddingLeft="@dimen/generalSpace"
         android:textColorHint="@color/light_grey"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:textCursorDrawable="@drawable/custom_edit_text_cursor"/>
 
     <EditText
         android:id="@+id/password_signUp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="30dp"
-        android:background="@color/off_white"
+        android:background="@color/transparent_off_white"
         android:ems="10"
         android:hint="Password"
         android:textColor="@color/fresco_blue"
@@ -53,15 +55,18 @@
         android:paddingVertical="@dimen/generalSpace"
         android:paddingLeft="@dimen/generalSpace"
         android:textColorHint="@color/light_grey"
-        app:layout_constraintTop_toBottomOf="@+id/email_phone_signUp"
-        android:layout_marginTop="@dimen/generalSpace"/>
+        app:layout_constraintTop_toBottomOf="@+id/email_address_signUp"
+        android:layout_marginTop="@dimen/generalSpace"
+        android:textCursorDrawable="@drawable/custom_edit_text_cursor"/>
 
     <Button
         android:id="@+id/signUpButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="30dp"
         android:layout_marginTop="@dimen/generalSpace"
         app:backgroundTint="@color/fresco_blue"
+        android:textColor="@color/white"
         android:text="@string/signUp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

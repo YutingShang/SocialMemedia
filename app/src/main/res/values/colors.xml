@@ -9,6 +9,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="light_grey">#CFCECE</color>
     <color name="off_white">#F3F2F2</color>
+    <color name="transparent_off_white">#99F3F2F2</color>
     <color name="fresco_blue">#034C67</color>
     <color name="fresco_pink">#F4DBD9</color>
+    <color name="charcoal">#2C2C2C</color>
 </resources>

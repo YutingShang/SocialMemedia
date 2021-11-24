@@ -3,15 +3,37 @@ package com.example.socialmemedia;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.ActionCodeSettings;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import static android.content.ContentValues.TAG;
 
 public class signInFragment extends Fragment {
 
+    FirebaseAuth mAuth;
+    Button signInButton,resetPasswordButton;
+    DatabaseReference databaseReference;
+    EditText email,password;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -29,15 +51,157 @@ public class signInFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState){
         super.onViewCreated(view,savedInstanceState);
 
-        Button signIn= getView().findViewById(R.id.signInButton);
+        signInButton = getView().findViewById(R.id.signInButton);
+        mAuth=FirebaseAuth.getInstance();
+        databaseReference= FirebaseDatabase.getInstance().getReference();    //connects to online Firebase database //get reference of top level of database
+        email = getView().findViewById(R.id.email_address);
+        password = getView().findViewById(R.id.password);
+        resetPasswordButton = getView().findViewById(R.id.resetPasswordButton);
 
-        signIn.setOnClickListener(new View.OnClickListener() {
+
+
+        signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(), ContactListActivity.class);
-                startActivity(intent);
+                signIn();
+            }
+        });
+
+        resetPasswordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (getString(email).isEmpty()) {
+                    Log.d(TAG, "onClick: error reset email empty");
+                    Toast.makeText(getContext(), "Error in resetting email. Please enter an email address", Toast.LENGTH_SHORT).show();
+                }else {
+                    sendEmailPasswordResetWithContinueUrl();
+                    
+//                    mAuth.sendPasswordResetEmail(getString(email)).addOnCompleteListener(new OnCompleteListener<Void>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<Void> task) {
+//                            if (task.isSuccessful()) {
+//                                Toast.makeText(getContext(), "Email sent", Toast.LENGTH_SHORT).show();
+//                            }
+//                        }
+//                    }).addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            Toast.makeText(getContext(), "Error in resetting email. " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+                    
+                }
+            }
+        });
+
+
+    }
+
+    /***************other methods**************************************************/
+    
+    private void sendEmailPasswordResetWithContinueUrl(){     //dynamic link that should redirect on any advice
+        String url = "https://www.example.com";       //web link
+        ActionCodeSettings actionCodeSettings = ActionCodeSettings.newBuilder()
+                .setUrl(url)
+                .setIOSBundleId("com.example.ios")      //ios link
+                .setAndroidPackageName("com.example.socialmemedia",false,null)     //android link if app detected as installed
+                .build();
+
+        mAuth.sendPasswordResetEmail(getString(email),actionCodeSettings).addOnCompleteListener(new OnCompleteListener<Void>() {
+            /**sending the password reset with the actionCodeSettings means the continue url will be triggered after the link is clicked
+            so user should be redirected back to the app if they are on android**/
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "onComplete: resetting email sent");
+                    Toast.makeText(getContext(), "Password reset email sent to "+getString(email), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "onFailure: resetting email"+e.getMessage());
+                Toast.makeText(getContext(), "Error in sending password reset email. " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
-}
+    private boolean isEmailValid(CharSequence email){
+        if (email== null){
+            return false;
+        }
+        else{
+            return Patterns.EMAIL_ADDRESS.matcher(email).matches();  //returns true or false if email matches or not
+        }
+    }
 
+    public void sendUser(){
+        Intent intent = new Intent(getContext(),ContactListActivity.class);
+        startActivity(intent);
+    }
+
+//    @Override
+//    public void onStart() {   //when application opens
+//        super.onStart();
+//
+//        FirebaseUser user = mAuth.getCurrentUser();
+//
+//        if (user!=null){
+//            Log.d(TAG, "onStart: email is verified? "+user.getUid()+" "+user.isEmailVerified());
+//            sendUser();    //if user is logged in start on ContactListActivity
+//        }
+//
+////        FirebaseUser user=mAuth.getCurrentUser();
+////        if (user!=null) {
+////            FirebaseAuth.getInstance().getCurrentUser().reload().addOnSuccessListener(new OnSuccessListener<Void>() {
+////                @Override
+////                public void onSuccess(Void unused) {
+////                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+////                    if (user.isEmailVerified()) {
+////                        Log.d(TAG, "onSuccess: is verified!!");
+////                        sendUser();
+////                    }
+////                }
+////            }).addOnFailureListener(new OnFailureListener() {
+////                @Override
+////                public void onFailure(@NonNull Exception e) {
+////                    Log.d(TAG, "onFailure: not verified reload");
+////                }
+////            });
+////        }
+//    }
+
+    private void signIn(){
+        if(getString(email).isEmpty()){
+            Toast.makeText(getContext(),"Please enter your email",Toast.LENGTH_SHORT).show();
+        } else if(!isEmailValid(getString(email))){
+            Toast.makeText(getContext(),"Please enter a valid email address",Toast.LENGTH_SHORT).show();
+        } else if(getString(password).isEmpty()){
+            Toast.makeText(getContext(),"Please enter your password",Toast.LENGTH_SHORT).show();
+        } else{
+            mAuth.signInWithEmailAndPassword(getString(email),getString(password)).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()){
+                        if(mAuth.getCurrentUser().isEmailVerified()){    //just before switching to the ContactListActivity, check user if verified
+                            Log.d(TAG, "onComplete: logged on"+mAuth.getUid());
+                            Toast.makeText(getContext(),"Log in successful",Toast.LENGTH_SHORT).show();
+                            sendUser();
+                        }else{
+                            Toast.makeText(getContext(), "Please verify your email before logging on", Toast.LENGTH_SHORT).show();
+                            mAuth.signOut();            //if not verified log them out again and ask for their email to be verified
+                        }
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getContext(), "Error in signing in. "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private String getString(EditText editText){
+        return editText.getText().toString().trim();
+    }
+}

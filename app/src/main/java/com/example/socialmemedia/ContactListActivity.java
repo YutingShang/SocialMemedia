@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -12,13 +14,25 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+//import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
+//import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static android.content.ContentValues.TAG;
+
 public class ContactListActivity extends AppCompatActivity {
 
+    FirebaseAuth mAuth;
+    DatabaseReference databaseReference;
     ListView contactListView;
     ArrayAdapter contactsAdapter;
     ArrayList<String> users = new ArrayList<String>(Arrays.asList("Joe","Ori","Ben","Bob","Ned","Tim","Uma","Mia","Edi","Zak","Ali","Tom","Max","Pip","Dan","Kev","Jil","Ido"));
@@ -75,5 +89,41 @@ public class ContactListActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+//        mAuth=FirebaseAuth.getInstance();
+//        databaseReference=FirebaseDatabase.getInstance().getReference();
+//        if(mAuth.getCurrentUser().isEmailVerified()) {
+//            Log.d(TAG, "onCreate: user verified");
+//        }else{
+//            Log.d(TAG, "onCreate: user not verified");
+//        }
+
+//        FirebaseDynamicLinks.getInstance()
+//                .getDynamicLink(getIntent())
+//                .addOnSuccessListener(this, new OnSuccessListener<PendingDynamicLinkData>() {
+//                    @Override
+//                    public void onSuccess(PendingDynamicLinkData pendingDynamicLinkData) {
+//                        // Get deep link from result (may be null if no link is found)
+//                        Uri deepLink = null;
+//                        if (pendingDynamicLinkData != null) {
+//                            deepLink = pendingDynamicLinkData.getLink();
+//                        }
+//
+//
+//                        // Handle the deep link. For example, open the linked
+//                        // content, or apply promotional credit to the user's
+//                        // account.
+//                        // ...
+//
+//                        // ...
+//                    }
+//                })
+//                .addOnFailureListener(this, new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Log.w(TAG, "getDynamicLink:onFailure", e);
+//                    }
+//                });
     }
+
 }

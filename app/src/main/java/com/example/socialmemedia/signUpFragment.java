@@ -71,7 +71,25 @@ public class signUpFragment extends Fragment {
         resendVerificationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendEmailVerificationWithContinueUrl();
+                if (getString(email).isEmpty()) {
+                    Toast.makeText(getContext(), "Please enter your email", Toast.LENGTH_SHORT).show();
+                } else if (getString(password).isEmpty()) {
+                    Toast.makeText(getContext(), "Please enter your password", Toast.LENGTH_SHORT).show();
+                } else {
+                    mAuth.signInWithEmailAndPassword(getString(email), getString(password)).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            sendEmailVerificationWithContinueUrl();
+                            //sending a verification email requires the mAuth.getCurrentUser() so user needs to be logged in
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "error in resending email verification. " + e.getMessage());
+                            Toast.makeText(getContext(), "Error in resending email verification. " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             }
         });
 
@@ -124,7 +142,6 @@ public class signUpFragment extends Fragment {
                                 Toast.makeText(getContext(), "Failure in saving data: "+e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
-
                     }
                 }
             }).addOnFailureListener(new OnFailureListener() {    //failed to create new user
@@ -161,7 +178,6 @@ public class signUpFragment extends Fragment {
             });
         }
     }
-
     public void sendUser(){
         Intent intent = new Intent(getContext(),ContactListActivity.class);
         startActivity(intent);

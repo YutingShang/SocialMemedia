@@ -6,8 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".signInFragment">
 
-
-
     <EditText
         android:id="@+id/email_address"
         android:layout_width="match_parent"

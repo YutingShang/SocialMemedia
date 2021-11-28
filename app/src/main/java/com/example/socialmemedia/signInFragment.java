@@ -53,7 +53,8 @@ public class signInFragment extends Fragment {
 
         signInButton = getView().findViewById(R.id.signInButton);
         mAuth=FirebaseAuth.getInstance();
-        databaseReference= FirebaseDatabase.getInstance().getReference();    //connects to online Firebase database //get reference of top level of database
+        databaseReference= FirebaseDatabase.getInstance().getReference();
+        //connects to online Firebase database //get reference of top level of database
         email = getView().findViewById(R.id.email_address);
         password = getView().findViewById(R.id.password);
         resetPasswordButton = getView().findViewById(R.id.resetPasswordButton);
@@ -94,7 +95,8 @@ public class signInFragment extends Fragment {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()){
-                        if(mAuth.getCurrentUser().isEmailVerified()){    //just before switching to the ContactListActivity, check user if verified
+                        if(mAuth.getCurrentUser().isEmailVerified()){
+                            //just before switching to the ContactListActivity, check user if verified
                             Log.d(TAG, "onComplete: logged on"+mAuth.getUid());
                             Toast.makeText(getContext(),"Log in successful",Toast.LENGTH_SHORT).show();
                             sendUser();
@@ -119,7 +121,8 @@ public class signInFragment extends Fragment {
         ActionCodeSettings actionCodeSettings = ActionCodeSettings.newBuilder()
                 .setUrl(url)
                 .setIOSBundleId("com.example.ios")      //ios link
-                .setAndroidPackageName("com.example.socialmemedia",false,null)     //android link if app detected as installed
+                .setAndroidPackageName("com.example.socialmemedia",false,null)
+                //android link if app detected as installed
                 .build();
 
         mAuth.sendPasswordResetEmail(getString(email),actionCodeSettings).addOnCompleteListener(new OnCompleteListener<Void>() {

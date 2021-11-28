@@ -41,7 +41,7 @@
                android:textStyle="bold"
                android:layout_centerHorizontal="true"/>
 
-          
+
        </RelativeLayout>
 
     </androidx.cardview.widget.CardView>

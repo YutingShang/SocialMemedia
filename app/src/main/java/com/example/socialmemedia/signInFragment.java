@@ -75,101 +75,13 @@ public class signInFragment extends Fragment {
                     Toast.makeText(getContext(), "Error in resetting email. Please enter an email address", Toast.LENGTH_SHORT).show();
                 }else {
                     sendEmailPasswordResetWithContinueUrl();
-                    
-//                    mAuth.sendPasswordResetEmail(getString(email)).addOnCompleteListener(new OnCompleteListener<Void>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<Void> task) {
-//                            if (task.isSuccessful()) {
-//                                Toast.makeText(getContext(), "Email sent", Toast.LENGTH_SHORT).show();
-//                            }
-//                        }
-//                    }).addOnFailureListener(new OnFailureListener() {
-//                        @Override
-//                        public void onFailure(@NonNull Exception e) {
-//                            Toast.makeText(getContext(), "Error in resetting email. " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//                        }
-//                    });
-                    
                 }
             }
         });
-
 
     }
 
     /***************other methods**************************************************/
-    
-    private void sendEmailPasswordResetWithContinueUrl(){     //dynamic link that should redirect on any advice
-        String url = "https://www.example.com";       //web link
-        ActionCodeSettings actionCodeSettings = ActionCodeSettings.newBuilder()
-                .setUrl(url)
-                .setIOSBundleId("com.example.ios")      //ios link
-                .setAndroidPackageName("com.example.socialmemedia",false,null)     //android link if app detected as installed
-                .build();
-
-        mAuth.sendPasswordResetEmail(getString(email),actionCodeSettings).addOnCompleteListener(new OnCompleteListener<Void>() {
-            /**sending the password reset with the actionCodeSettings means the continue url will be triggered after the link is clicked
-            so user should be redirected back to the app if they are on android**/
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    Log.d(TAG, "onComplete: resetting email sent");
-                    Toast.makeText(getContext(), "Password reset email sent to "+getString(email), Toast.LENGTH_SHORT).show();
-                }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, "onFailure: resetting email"+e.getMessage());
-                Toast.makeText(getContext(), "Error in sending password reset email. " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-    private boolean isEmailValid(CharSequence email){
-        if (email== null){
-            return false;
-        }
-        else{
-            return Patterns.EMAIL_ADDRESS.matcher(email).matches();  //returns true or false if email matches or not
-        }
-    }
-
-    public void sendUser(){
-        Intent intent = new Intent(getContext(),ContactListActivity.class);
-        startActivity(intent);
-    }
-
-//    @Override
-//    public void onStart() {   //when application opens
-//        super.onStart();
-//
-//        FirebaseUser user = mAuth.getCurrentUser();
-//
-//        if (user!=null){
-//            Log.d(TAG, "onStart: email is verified? "+user.getUid()+" "+user.isEmailVerified());
-//            sendUser();    //if user is logged in start on ContactListActivity
-//        }
-//
-////        FirebaseUser user=mAuth.getCurrentUser();
-////        if (user!=null) {
-////            FirebaseAuth.getInstance().getCurrentUser().reload().addOnSuccessListener(new OnSuccessListener<Void>() {
-////                @Override
-////                public void onSuccess(Void unused) {
-////                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-////                    if (user.isEmailVerified()) {
-////                        Log.d(TAG, "onSuccess: is verified!!");
-////                        sendUser();
-////                    }
-////                }
-////            }).addOnFailureListener(new OnFailureListener() {
-////                @Override
-////                public void onFailure(@NonNull Exception e) {
-////                    Log.d(TAG, "onFailure: not verified reload");
-////                }
-////            });
-////        }
-//    }
-
     private void signIn(){
         if(getString(email).isEmpty()){
             Toast.makeText(getContext(),"Please enter your email",Toast.LENGTH_SHORT).show();
@@ -198,6 +110,48 @@ public class signInFragment extends Fragment {
                     Toast.makeText(getContext(), "Error in signing in. "+e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
+        }
+    }
+
+    
+    private void sendEmailPasswordResetWithContinueUrl(){     //dynamic link that should redirect on any device
+        String url = "https://www.example.com";       //web link
+        ActionCodeSettings actionCodeSettings = ActionCodeSettings.newBuilder()
+                .setUrl(url)
+                .setIOSBundleId("com.example.ios")      //ios link
+                .setAndroidPackageName("com.example.socialmemedia",false,null)     //android link if app detected as installed
+                .build();
+
+        mAuth.sendPasswordResetEmail(getString(email),actionCodeSettings).addOnCompleteListener(new OnCompleteListener<Void>() {
+            /**sending the password reset with the actionCodeSettings means the continue url will be triggered after the link is clicked
+            so user should be redirected back to the app if they are on android**/
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "onComplete: resetting email sent");
+                    Toast.makeText(getContext(), "Password reset email sent to "+getString(email), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "onFailure: resetting email"+e.getMessage());
+                Toast.makeText(getContext(), "Error in sending password reset email. " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void sendUser(){
+        Intent intent = new Intent(getContext(),ContactListActivity.class);
+        startActivity(intent);
+    }
+
+    private boolean isEmailValid(CharSequence email){
+        if (email== null){
+            return false;
+        }
+        else{
+            return Patterns.EMAIL_ADDRESS.matcher(email).matches();  //returns true or false if email matches or not
         }
     }
 

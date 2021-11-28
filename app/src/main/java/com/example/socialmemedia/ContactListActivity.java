@@ -90,40 +90,6 @@ public class ContactListActivity extends AppCompatActivity {
             }
         });
 
-//        mAuth=FirebaseAuth.getInstance();
-//        databaseReference=FirebaseDatabase.getInstance().getReference();
-//        if(mAuth.getCurrentUser().isEmailVerified()) {
-//            Log.d(TAG, "onCreate: user verified");
-//        }else{
-//            Log.d(TAG, "onCreate: user not verified");
-//        }
-
-//        FirebaseDynamicLinks.getInstance()
-//                .getDynamicLink(getIntent())
-//                .addOnSuccessListener(this, new OnSuccessListener<PendingDynamicLinkData>() {
-//                    @Override
-//                    public void onSuccess(PendingDynamicLinkData pendingDynamicLinkData) {
-//                        // Get deep link from result (may be null if no link is found)
-//                        Uri deepLink = null;
-//                        if (pendingDynamicLinkData != null) {
-//                            deepLink = pendingDynamicLinkData.getLink();
-//                        }
-//
-//
-//                        // Handle the deep link. For example, open the linked
-//                        // content, or apply promotional credit to the user's
-//                        // account.
-//                        // ...
-//
-//                        // ...
-//                    }
-//                })
-//                .addOnFailureListener(this, new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Log.w(TAG, "getDynamicLink:onFailure", e);
-//                    }
-//                });
     }
 
 }

@@ -32,7 +32,7 @@ import static android.content.ContentValues.TAG;
 public class signUpFragment extends Fragment {
 
     FirebaseAuth mAuth;
-    Button signUpButton;
+    Button signUpButton,resendVerificationButton;
     DatabaseReference databaseReference;
     EditText name,email,password;
 
@@ -58,6 +58,7 @@ public class signUpFragment extends Fragment {
         email = (EditText)getView().findViewById(R.id.email_address_signUp);
         password = getView().findViewById(R.id.password_signUp);
         signUpButton = getView().findViewById(R.id.signUpButton);
+        resendVerificationButton= getView().findViewById(R.id.resendVerificationButton);
 
 
         signUpButton.setOnClickListener(new View.OnClickListener() {
@@ -67,55 +68,18 @@ public class signUpFragment extends Fragment {
             }
         });
 
-
+        resendVerificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendEmailVerificationWithContinueUrl();
+            }
+        });
 
     }
 
     /***************other methods**************************************************/
-    private boolean isEmailValid(CharSequence email){
-        if (email== null){
-            return false;
-        }
-        else{
-            return Patterns.EMAIL_ADDRESS.matcher(email).matches();  //returns true or false if email matches or not
-        }
-    }
-
-    public void sendUser(){
-        Intent intent = new Intent(getContext(),ContactListActivity.class);
-        startActivity(intent);
-    }
-
-    @Override
-    public void onStart() {   //when application opens, e.g between switching applications
-        super.onStart();
-        FirebaseUser user=mAuth.getCurrentUser();
-        if (user!=null) {    //if user is signed in
-            FirebaseAuth.getInstance().getCurrentUser().reload().addOnSuccessListener(new OnSuccessListener<Void>() {
-                //refreshes data of current user so isEmailVerified will be updated
-                @Override
-                public void onSuccess(Void unused) {
-                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                    if (user.isEmailVerified()) {          //if user has verified their email
-                        Log.d(TAG, "onSuccess: user is verified "+user.getUid());
-                        sendUser();     //start intent to ContactListActivity
-                    }
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.d(TAG, "onFailure: Reload user failed. Please manually log in.  "+e.getMessage());
-                    Toast.makeText(getContext(), "Reload user failed. Please manually log in.  "+e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    }
-
-
-
-
-
     private void signUp() {
+        //first validates the user input
         if (getString(name).isEmpty()) {
             Toast.makeText(getContext(), "Please enter your name", Toast.LENGTH_SHORT).show();
         } else if(!isAlpha(getString(name))){
@@ -143,33 +107,17 @@ public class signUpFragment extends Fragment {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()){
+                        //add user data to a new branch on the database
                         databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("name").setValue(getString(name));
                         databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("email").setValue(getString(email)).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if(task.isSuccessful()){
                                     Toast.makeText(getContext(),"Sign up successful",Toast.LENGTH_SHORT).show();
-//                                    mAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
-//                                        @Override
-//                                        public void onComplete(@NonNull Task<Void> task) {
-//                                            if (task.isSuccessful()){
-//                                                Toast.makeText(getContext(), "Please check your email to verify your account", Toast.LENGTH_SHORT).show();
-//                                            }
-//                                        }
-//                                    }).addOnFailureListener(new OnFailureListener() {
-//                                        @Override
-//                                        public void onFailure(@NonNull Exception e) {
-//                                            Toast.makeText(getContext(), "Error in sending verification email. " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//                                        }
-//                                    });
                                     sendEmailVerificationWithContinueUrl();
-//                                    if(mAuth.getCurrentUser().isEmailVerified()) {
-//                                        sendUser();
-//                                    }
-                                    //sendUser();
                                 }
                             }
-                        }).addOnFailureListener(new OnFailureListener() {
+                        }).addOnFailureListener(new OnFailureListener() {            //failed to add data to database
                             @Override
                             public void onFailure(@NonNull Exception e) {
                                 Log.d(TAG, "onFailure: saving data"+e.getMessage());
@@ -179,7 +127,7 @@ public class signUpFragment extends Fragment {
 
                     }
                 }
-            }).addOnFailureListener(new OnFailureListener() {
+            }).addOnFailureListener(new OnFailureListener() {    //failed to create new user
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     Toast.makeText(getContext(),"Error in signing up "+e.getMessage(),Toast.LENGTH_SHORT).show();
@@ -188,8 +136,51 @@ public class signUpFragment extends Fragment {
         }
     }
 
+
+    @Override
+    public void onStart() {   //when application opens, e.g between switching applications
+        super.onStart();
+        FirebaseUser user=mAuth.getCurrentUser();
+        if (user!=null) {    //if user is signed in
+            FirebaseAuth.getInstance().getCurrentUser().reload().addOnSuccessListener(new OnSuccessListener<Void>() {
+                //refreshes data of current user so isEmailVerified will be updated
+                @Override
+                public void onSuccess(Void unused) {
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    if (user.isEmailVerified()) {          //if user has verified their email
+                        Log.d(TAG, "onSuccess: user is verified "+user.getUid());
+                        sendUser();     //start intent to ContactListActivity
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG, "onFailure: Reload user failed. Please manually log in.  "+e.getMessage());
+                    Toast.makeText(getContext(), "Reload user failed. Please manually log in.  "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    public void sendUser(){
+        Intent intent = new Intent(getContext(),ContactListActivity.class);
+        startActivity(intent);
+    }
+
+    //method to get string from text box, prevent lots of code repetition
     private String getString(EditText editText){
         return editText.getText().toString().trim();
+    }
+
+
+    /******Input validation methods**************************/
+    private boolean isEmailValid(CharSequence email){
+        if (email== null){
+            return false;
+        }
+        else{
+            return Patterns.EMAIL_ADDRESS.matcher(email).matches();  //returns true or false if email matches or not
+        }
     }
 
     private boolean isAlpha(String string) {
@@ -231,15 +222,19 @@ public class signUpFragment extends Fragment {
         return 1;
     }
 
-    private void sendEmailVerificationWithContinueUrl(){
-        String url = "https://www.example.com/verify?uid="+mAuth.getCurrentUser().getUid();
+    /**********************dynamic link after email***************************/
+    private void sendEmailVerificationWithContinueUrl(){       //dynamic link that should redirect on any device
+        String url = "https://www.example.com/verify?uid="+mAuth.getCurrentUser().getUid();    //web link
         ActionCodeSettings actionCodeSettings = ActionCodeSettings.newBuilder()
                 .setUrl(url)
-                .setIOSBundleId("com.example.ios")
+                .setIOSBundleId("com.example.ios")      //ios link
                 .setAndroidPackageName("com.example.socialmemedia",false,null)
+                //android link if app detected as installed
                 .build();
 
         mAuth.getCurrentUser().sendEmailVerification(actionCodeSettings).addOnCompleteListener(new OnCompleteListener<Void>() {
+            /**actionCodeSettings means the continue url will be triggered after the link is clicked
+             so user should be redirected back to the app if they are on android**/
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){
@@ -255,8 +250,6 @@ public class signUpFragment extends Fragment {
                 Toast.makeText(getContext(), "Email verification link not sent. "+e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
-
     }
 
 

@@ -181,6 +181,7 @@ public class signUpFragment extends Fragment {
     public void sendUser(){
         Intent intent = new Intent(getContext(),ContactListActivity.class);
         startActivity(intent);
+
     }
 
     //method to get string from text box, prevent lots of code repetition

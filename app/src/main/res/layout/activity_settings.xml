@@ -18,6 +18,7 @@
 
     <ImageButton
         android:id="@+id/backButton"
+        android:contentDescription="back button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/generalSpace"

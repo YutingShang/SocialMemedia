@@ -23,9 +23,17 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ChatActivity.this, ContactListActivity.class);
                 startActivity(intent);
-                overridePendingTransition(0,0);
+                overridePendingTransition(R.anim.slide_in_top,R.anim.slide_out_bottom);
+                //ContactList activity will slide in from top, ChatActivity will slide out from bottom
+
             }
         });
 
+    }
+
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        overridePendingTransition(R.anim.slide_in_top,R.anim.slide_out_bottom);
     }
 }

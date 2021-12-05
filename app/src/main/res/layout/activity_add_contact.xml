@@ -7,24 +7,25 @@
     tools:context=".AddContactActivity">
 
 
-
-
     <SearchView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/toolbar"
         android:id="@+id/search_view"
         android:queryHint="Add new contact"
-        android:backgroundTint="@color/fresco_pink"
-        />
+        android:iconifiedByDefault="false"/>   <!--icon always shows-->
+
 
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/add_contact_listview"
         android:layout_below="@id/search_view"
+        android:layout_above="@+id/add_contact_button"
+        android:choiceMode="singleChoice"
+        android:listSelector="@color/transparent_off_white" >
 
-        />
+    </ListView>   <!--keeps selected item highlighted-->
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -37,5 +38,17 @@
         app:title="Add Contact"
         app:titleTextColor="@color/fresco_pink"
         app:navigationIcon="?homeAsUpIndicator"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/add_contact_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Contact"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        app:cornerRadius="30dp"
+        app:backgroundTint="@color/fresco_blue"
+        android:layout_marginBottom="@dimen/widerGeneralSpace"
+        />
 
 </RelativeLayout>

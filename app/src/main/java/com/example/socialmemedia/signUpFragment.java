@@ -127,7 +127,7 @@ public class signUpFragment extends Fragment {
                     if (task.isSuccessful()){
                         //add user data to a new branch on the database
                         databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("name").setValue(getString(name));
-                        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("email").setValue(getString(email)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("email").setValue(getString(email).toLowerCase()).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if(task.isSuccessful()){

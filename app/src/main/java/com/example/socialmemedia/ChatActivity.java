@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -28,6 +29,11 @@ public class ChatActivity extends AppCompatActivity {
 
             }
         });
+
+        String otherEmail= getIntent().getStringExtra("name");
+        TextView textView = findViewById(R.id.chattext);
+        textView.setText("chat with "+otherEmail);
+
 
     }
 

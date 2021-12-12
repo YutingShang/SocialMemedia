@@ -59,7 +59,7 @@ public class SettingsActivity extends AppCompatActivity {
         deleteAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {    //deletes user from firebase authentication
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         Log.d(TAG, "onComplete: User account deleted");
@@ -73,7 +73,10 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                 });
 
-                databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).removeValue();
+                databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).removeValue();    //deletes user from database
+
+                /*TO-DO: referential integrity - delete all instances of user UID from database*/
+
                 Intent intent = new Intent(SettingsActivity.this, SignUpActivity.class);
                 startActivity(intent);
             }

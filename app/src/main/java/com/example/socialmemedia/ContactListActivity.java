@@ -43,10 +43,11 @@ public class ContactListActivity extends AppCompatActivity {
     ListView contactListView;
     ArrayAdapter contactsAdapter;
 //    ArrayList<String> users = new ArrayList<String>(Arrays.asList("Joe","Ori","Ben","Bob","Ned","Tim","Uma","Mia","Edi","Zak","Ali","Tom","Max","Pip","Dan","Kev","Jil","Ido"));
-    ArrayList<ArrayList<String>> contactsDetails;
-    ArrayList<String> tempContactEmails;
+
     ArrayList<String> contactNames;
     ArrayList<String> contactEmails;
+
+    ArrayList<ArrayList<String>> chatsDetails;     //[("chatID","timestamp",userUID","userName","userEmail"),...]
     BottomNavigationView bottomNavigationView;
     Toolbar toolbar;
     FloatingActionButton floatingActionButton;
@@ -58,54 +59,120 @@ public class ContactListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_list);
 
-        contactsDetails= new ArrayList<ArrayList<String>>();
-        tempContactEmails= new ArrayList<>();
+
+        chatsDetails = new ArrayList<>();
+        contactNames=new ArrayList<>();
+        contactEmails=new ArrayList<>();
+
         mAuth=FirebaseAuth.getInstance();
         databaseReference= FirebaseDatabase.getInstance().getReference();
 
-//        contacts= new ArrayList<String>();
         contactListView=findViewById(R.id.contactListView);
 
-        /*populate users ArrauList with name and email of contacts from Firebase database*/
-        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("contacts").addValueEventListener(new ValueEventListener() {
+
+
+
+        /*populate ArrayList with chat ID from Firebase database*/
+        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("chats").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                contactsDetails.clear();   //clears ArrayList to repopulate it, avoid duplication
+                chatsDetails.clear();   //clears ArrayList to repopulate it, avoid duplication
 
                 if(snapshot.exists()){
                     for(DataSnapshot contactSnapshot:snapshot.getChildren()){  //for every contact
 
-                        ArrayList<String> thisContact= new ArrayList<String>();  //array to go inside 2d array
-                        String contactUid=contactSnapshot.getKey();   //name of node is the uid
+                        ArrayList<String> thisChat= new ArrayList<String>();  //array to go inside 2d array
+                        String chatId=contactSnapshot.getKey();   //name of node is the uid
 
-                        //adds uid to ArrayList for this contact
-                        thisContact.add(contactUid);
-                        thisContact.add("nameTemp");       //temporary names and emails to give 2D arrayList structure
-                        thisContact.add("emailTemp");      //allows set() value instead of add() to arrayList - no glitch
-                        contactsDetails.add(thisContact);    //[("id1","name1","email1"),("id2","name2","email2")...]
+                        //adds id to ArrayList for this chat
+                        thisChat.add(chatId);
+                        thisChat.add("timestampTemp");
+                        thisChat.add("userIdTemp");
+                        thisChat.add("nameTemp");       //temporary names and emails to give 2D arrayList structure
+                        thisChat.add("emailTemp");      //allows set() value instead of add() to arrayList - no glitch
+                        chatsDetails.add(thisChat);    //[("chatID","timestamp",userUID","userName","userEmail"),...]
 
                     }
 
-                    Log.d(TAG, "onDataChange: "+contactsDetails);
+                    Log.d(TAG, "onDataChange: listener 1 "+chatsDetails);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                Toast.makeText(ContactListActivity.this, "Error in updating chats. "+error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
-        /*whenever values under users changes*/
+        /*populate 2d ArrayList with users uid and timestamp from Firebase database*/
+        databaseReference.child("chats").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {  //snapshot of chats
+
+                ArrayList<String> chatsIdArray= new ArrayList<>();
+                for (ArrayList<String> eachChat: chatsDetails){    //for every chat in chat Details
+                    chatsIdArray.add(eachChat.get(0));            //creates an array of chat ID
+                }
+                if (snapshot.exists()){
+                    for (DataSnapshot eachChatSnapshot: snapshot.getChildren()){   //for every chat id
+
+                        if(chatsIdArray.contains(eachChatSnapshot.getKey())){    //if this this chat id(the key) is a chat containing current user
+
+                            int indexIn2DArray=chatsIdArray.indexOf(eachChatSnapshot.getKey());   //gets index of where chat UID is
+
+                            String timestamp=eachChatSnapshot.child("timestamp").getValue().toString();
+                            String contactUid=null; //only stores single user id, doesn't work for group chats
+
+                            for(DataSnapshot eachChatUser: eachChatSnapshot.child("users").getChildren()){    //for each user in chat
+                                if(!eachChatUser.getKey().equals(mAuth.getCurrentUser().getUid()) && eachChatUser.getValue().toString().equals("true")){
+                                    //if the chat user is not the current user and the user still exists -i.e. "true"
+                                    contactUid=eachChatUser.getKey();
+                                }
+                            }
+                            chatsDetails.get(indexIn2DArray).set(1,timestamp);
+                            chatsDetails.get(indexIn2DArray).set(2,contactUid);   //set uid under correct chat id in contacts array
+                        }
+                    }
+
+                    //sorts alphabetically based on time of last message which is at index 1
+                    Collections.sort(chatsDetails, new Comparator<ArrayList<String>>() {
+                        @Override
+                        public int compare(ArrayList<String> o1, ArrayList<String> o2) {
+                            return o2.get(1).compareTo(o1.get(1));
+                        }
+                    });
+
+                    Log.d(TAG, "onDataChange: listener 2 "+chatsDetails);
+
+                    contactNames.clear();
+                    contactEmails.clear();
+
+                    for (ArrayList<String> arrayList:chatsDetails){
+                        contactNames.add(arrayList.get(3));
+                        contactEmails.add(arrayList.get(4));
+                    }
+
+                    contactsAdapter = new ArrayAdapter<String>(ContactListActivity.this, android.R.layout.simple_list_item_1,contactEmails);
+                    //ArrayAdapter populates a ListView with ArrayList items
+                    contactListView.setAdapter(contactsAdapter);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ContactListActivity.this, "Error in updating contacts. "+error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        /*whenever values under users changes, update user email and name in 2D array*/
         databaseReference.child("users").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 ArrayList<String> contactUidArray= new ArrayList<>();
-                for (ArrayList<String> eachContact: contactsDetails){    //for every contact in contact Details
-                    contactUidArray.add(eachContact.get(0));            //creates an array of UID
-                    Log.d(TAG, "onDataChange: :)) "+contactsDetails);
-
+                for (ArrayList<String> eachContact: chatsDetails){    //for every chat contact in chat Details
+                    contactUidArray.add(eachContact.get(2));            //creates an array of UID
                 }
                 if (snapshot.exists()){
                     for (DataSnapshot dataSnapshot: snapshot.getChildren()){   //for every user uid
@@ -117,31 +184,19 @@ public class ContactListActivity extends AppCompatActivity {
                             String contactName=dataSnapshot.child("name").getValue().toString();
                             String contactEmail=dataSnapshot.child("email").getValue().toString();
 
-                            contactsDetails.get(indexIn2DArray).set(1,contactName);   //set name under correct uid in contacts array
-                            contactsDetails.get(indexIn2DArray).set(2,contactEmail);
+                            chatsDetails.get(indexIn2DArray).set(3,contactName);   //set name under correct uid in contacts array
+                            chatsDetails.get(indexIn2DArray).set(4,contactEmail);
 
                         }
                     }
+                    Log.d(TAG, "onDataChange: listener 3 "+chatsDetails);
 
+                    contactNames.clear();
+                    contactEmails.clear();
 
-
-                    //sorts alphabetically based on email which is at index 2
-                    Collections.sort(contactsDetails, new Comparator<ArrayList<String>>() {
-                        @Override
-                        public int compare(ArrayList<String> o1, ArrayList<String> o2) {
-                            return o1.get(1).compareTo(o2.get(1));
-                        }
-                    });
-
-                    Log.d(TAG, "onDataChange: "+contactsDetails);
-
-
-                    contactNames=new ArrayList<>();
-                    contactEmails=new ArrayList<>();
-
-                    for (ArrayList<String> arrayList:contactsDetails){
-                        contactNames.add(arrayList.get(1));
-                        contactEmails.add(arrayList.get(2));
+                    for (ArrayList<String> arrayList:chatsDetails){
+                        contactNames.add(arrayList.get(3));
+                        contactEmails.add(arrayList.get(4));
                     }
 
                     contactsAdapter = new ArrayAdapter<String>(ContactListActivity.this, android.R.layout.simple_list_item_1,contactEmails);
@@ -165,8 +220,8 @@ public class ContactListActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(ContactListActivity.this,ChatActivity.class);
 
-                intent.putExtra("name",contactsDetails.get(position).get(1));  //attaches name to intent
-                Log.d(TAG, "onItemClick: "+contactsDetails.get(position).get(1));
+                intent.putExtra("name",chatsDetails.get(position).get(3));  //attaches name to intent
+                Log.d(TAG, "onItemClick: "+chatsDetails.get(position).get(3));
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_bottom,R.anim.slide_out_top);
                 //chat activity slide in from bottom, contact list activty slide out from top

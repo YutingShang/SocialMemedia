@@ -25,9 +25,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static android.content.ContentValues.TAG;
 
@@ -181,7 +185,7 @@ public class AddContactActivity extends AppCompatActivity {
                         databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("contacts").child(contactUidToAdd).setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
-                                Toast.makeText(AddContactActivity.this, "New contact " + userEmailToAdd + " added", Toast.LENGTH_SHORT).show();
+//                                Toast.makeText(AddContactActivity.this, "New contact " + userEmailToAdd + " added", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "onComplete: added new contact " + userEmailToAdd);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
@@ -191,6 +195,49 @@ public class AddContactActivity extends AppCompatActivity {
                                 Log.d(TAG, "onFailure: error adding new contact. " + e.getMessage());
                             }
                         });
+
+                        //adds a new chat containing messages between this user and contact
+                        String chatID= databaseReference.child("chats").push().getKey();
+                        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("chats").child(chatID).setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                Log.d(TAG, "onComplete: new chat created");
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "onFailure: failed to create chat");
+                            }
+                        });
+
+                        //creates a hashmap to add a new "chat" branch in realtime database quickly
+                        String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+                        String welcomeMessage ="Hello this is "+mAuth.getCurrentUser().getEmail();
+
+                        Map<String,Object> chatsUpdate = new HashMap<>();
+                        chatsUpdate.put("chats/"+chatID+"/users/"+mAuth.getCurrentUser().getUid(),true);
+                        chatsUpdate.put("chats/"+chatID+"/users/"+contactUidToAdd,true);
+                        chatsUpdate.put("chats/"+chatID+"/lastMessage",welcomeMessage);
+                        chatsUpdate.put("chats/"+chatID+"/timestamp",timestamp);
+
+                        chatsUpdate.put("messages/"+chatID+"/0/sender",mAuth.getCurrentUser().getUid());
+                        chatsUpdate.put("messages/"+chatID+"/0/message",welcomeMessage);
+                        chatsUpdate.put("messages/"+chatID+"/0/timestamp",timestamp);
+
+                        databaseReference.updateChildren(chatsUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull  Task<Void> task) {
+                                Toast.makeText(AddContactActivity.this, "New chat with " + userEmailToAdd + " created", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "onComplete: added chat to database");
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+//                                Toast.makeText(AddContactActivity.this, "Failed to create chat. "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "onFailure: failed to add chat to database. "+e.getMessage());
+                            }
+                        });
+
                     }
                 } else{
                     Toast.makeText(AddContactActivity.this, "Please select a contact to add", Toast.LENGTH_SHORT).show();

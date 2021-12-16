@@ -47,12 +47,7 @@ public class ContactListActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     DatabaseReference databaseReference;
     ListView contactListView;
-    ArrayAdapter contactsAdapter;
 //    ArrayList<String> users = new ArrayList<String>(Arrays.asList("Joe","Ori","Ben","Bob","Ned","Tim","Uma","Mia","Edi","Zak","Ali","Tom","Max","Pip","Dan","Kev","Jil","Ido"));
-
-//    ArrayList<String> contactNames;
-//    ArrayList<String> contactEmails;
-
 
     ArrayList<ArrayList<String>> chatsDetails;     //[("chatID","timestamp",userUID","userName","userEmail"),...]
     BottomNavigationView bottomNavigationView;
@@ -60,112 +55,16 @@ public class ContactListActivity extends AppCompatActivity {
     FloatingActionButton floatingActionButton;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_list);
 
-
         chatsDetails = new ArrayList<>();
-//        contactNames=new ArrayList<>();
-//        contactEmails=new ArrayList<>();
-
+        contactListView=findViewById(R.id.contactListView);
         mAuth=FirebaseAuth.getInstance();
         databaseReference= FirebaseDatabase.getInstance().getReference();
 
-        contactListView=findViewById(R.id.contactListView);
-
-//        //addValueEventListeners always triggered after addChildListeners
-//        //doesn't clear the list each time, only listens out for new update
-//        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("chats").addChildEventListener(new ChildEventListener() {
-//            @Override
-//            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-//                ArrayList<String> thisChat= new ArrayList<String>();  //array to go inside 2d array
-//                String chatId=snapshot.getKey();   //name of node is the uid
-//
-//                //adds id to ArrayList for this chat
-//                thisChat.add(chatId);
-//                thisChat.add("timestampTemp");
-//                thisChat.add("userIdTemp");
-//                thisChat.add("nameTemp");       //temporary names and emails to give 2D arrayList structure
-//                thisChat.add("emailTemp");      //allows set() value instead of add() to arrayList - no glitch
-//                chatsDetails.add(thisChat);    //[("chatID","timestamp",userUID","userName","userEmail"),...]
-//
-//                Log.d(TAG, "onDataChange: listener 1b "+chatsDetails);
-//
-//            }
-//
-//            @Override
-//            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-//
-//            }
-//
-//            @Override
-//            public void onChildRemoved(@NonNull  DataSnapshot snapshot) {
-//
-//            }
-//
-//            @Override
-//            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//
-//            }
-//        });
-//
-//        databaseReference.child("chats").addChildEventListener(new ChildEventListener() {
-//            @Override
-//            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable  String previousChildName) {
-//                //new chat added- need to add uid and timestamp
-//                ArrayList<String> chatsIdArray= new ArrayList<>();
-//                for (ArrayList<String> eachChat: chatsDetails){    //for every chat in chat Details
-//                    chatsIdArray.add(eachChat.get(0));            //creates an array of chat ID
-//                }
-//
-//                if(chatsIdArray.contains(snapshot.getKey())){    //the new ChatID
-//                    int indexIn2DArray=chatsIdArray.indexOf(snapshot.getKey());   //gets index of where chat UID is
-//
-//                    String timestamp=snapshot.child("timestamp").getValue().toString();
-//                    String contactUid=null; //only stores single user id, doesn't work for group chats
-//
-//                    for(DataSnapshot eachChatUser: snapshot.child("users").getChildren()){    //for each user in chat
-//                        if(!eachChatUser.getKey().equals(mAuth.getCurrentUser().getUid()) && eachChatUser.getValue().toString().equals("true")){
-//                            //if the chat user is not the current user and the user still exists -i.e. "true"
-//                            contactUid=eachChatUser.getKey();
-//                        }
-//                    }
-//                    chatsDetails.get(indexIn2DArray).set(1,timestamp);
-//                    chatsDetails.get(indexIn2DArray).set(2,contactUid);   //set uid under correct chat id in contacts array
-//
-//                }
-//
-//                Log.d(TAG, "onDataChange: listener 2b "+chatsDetails);
-//            }
-//
-//            @Override
-//            public void onChildChanged(@NonNull  DataSnapshot snapshot, @Nullable  String previousChildName) {
-//
-//            }
-//
-//            @Override
-//            public void onChildRemoved(@NonNull  DataSnapshot snapshot) {
-//
-//            }
-//
-//            @Override
-//            public void onChildMoved(@NonNull  DataSnapshot snapshot, @Nullable  String previousChildName) {
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//
-//            }
-//        });
 
         /*Listener 1- populate ArrayList with chat ID from Firebase database*/
         databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("chats").addValueEventListener(new ValueEventListener() {
@@ -211,7 +110,7 @@ public class ContactListActivity extends AppCompatActivity {
                 if (snapshot.exists()){
                     for (DataSnapshot eachChatSnapshot: snapshot.getChildren()){   //for every chat id
 
-                        if(chatsIdArray.contains(eachChatSnapshot.getKey())){    //if this this chat id(the key) is a chat containing current user
+                        if(chatsIdArray.contains(eachChatSnapshot.getKey())){    //if this this chat id(the key) is a chat of the current user
 
                             int indexIn2DArray=chatsIdArray.indexOf(eachChatSnapshot.getKey());   //gets index of where chat UID is
 
@@ -221,11 +120,11 @@ public class ContactListActivity extends AppCompatActivity {
                             for(DataSnapshot eachChatUser: eachChatSnapshot.child("users").getChildren()){    //for each user in chat
                                 if(!eachChatUser.getKey().equals(mAuth.getCurrentUser().getUid()) && eachChatUser.getValue().toString().equals("true")){
                                     //if the chat user is not the current user and the user still exists -i.e. "true"
-                                    contactUid=eachChatUser.getKey();
+                                    contactUid=eachChatUser.getKey();         //store the user ID as the contact name to be displayed on the chat
                                 }
                             }
                             chatsDetails.get(indexIn2DArray).set(1,timestamp);
-                            chatsDetails.get(indexIn2DArray).set(2,contactUid);   //set uid under correct chat id in contacts array
+                            chatsDetails.get(indexIn2DArray).set(2,contactUid);   //set timestamp and uid under correct chat id in 2D chats array
                         }
                     }
 
@@ -236,14 +135,11 @@ public class ContactListActivity extends AppCompatActivity {
                             return o2.get(1).compareTo(o1.get(1));
                         }
                     });
-
                     Log.d(TAG, "onDataChange: listener 2 "+chatsDetails);
 
 
+                    //inflates listview with email and name using array adapter
                     setListViewAdapter();
-
-
-
                 }
             }
 
@@ -272,17 +168,14 @@ public class ContactListActivity extends AppCompatActivity {
                             String contactName=dataSnapshot.child("name").getValue().toString();
                             String contactEmail=dataSnapshot.child("email").getValue().toString();
 
-                            chatsDetails.get(indexIn2DArray).set(3,contactName);   //set name under correct uid in contacts array
+                            chatsDetails.get(indexIn2DArray).set(3,contactName);   //set name and email under correct uid in chats array
                             chatsDetails.get(indexIn2DArray).set(4,contactEmail);
 
                         }
                     }
                     Log.d(TAG, "onDataChange: listener 3 "+chatsDetails);
 
-
-
                     setListViewAdapter();
-
                 }
             }
 
@@ -293,16 +186,16 @@ public class ContactListActivity extends AppCompatActivity {
         });
 
 
-
-
+        /*when a chat is selected from the listView*/
         contactListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(ContactListActivity.this,ChatActivity.class);
 
-                intent.putExtra("name",chatsDetails.get(position).get(3));  //attaches name to intent
+                intent.putExtra("name",chatsDetails.get(position).get(3));  //attaches name to intent so show on chatActivity
                 Log.d(TAG, "onItemClick: "+chatsDetails.get(position).get(3));
-                startActivity(intent);
+                startActivity(intent);          //goes to ChatActivity
+
                 overridePendingTransition(R.anim.slide_in_bottom,R.anim.slide_out_top);
                 //chat activity slide in from bottom, contact list activty slide out from top
             }
@@ -330,7 +223,7 @@ public class ContactListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
 
-
+        /*goes to AddContactActivity to add a new contact*/
         floatingActionButton=findViewById(R.id.floating_button);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -342,6 +235,7 @@ public class ContactListActivity extends AppCompatActivity {
         });
     }
 
+    /*toolbar buttons menu*/
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.menu_contact_toolbar,menu);
@@ -362,6 +256,7 @@ public class ContactListActivity extends AppCompatActivity {
         }
         return true;
     }
+    /**********************************/
 
     @Override
     public void onBackPressed(){
@@ -369,10 +264,11 @@ public class ContactListActivity extends AppCompatActivity {
 
     }
 
+    //simple adapter populates a ListView with 2 lines of data
     private void setListViewAdapter(){
-        //simple adapter populates a ListView with 2 lines of data
-        ArrayList<String> contactNames = new ArrayList<>();
+        ArrayList<String> contactNames = new ArrayList<>();       //two 1D arraylists to store the contact name and email from 2D array
         ArrayList<String> contactEmails = new ArrayList<>();
+
         for (ArrayList<String> arrayList:chatsDetails){
             contactNames.add(arrayList.get(3));
             contactEmails.add(arrayList.get(4));
@@ -381,12 +277,13 @@ public class ContactListActivity extends AppCompatActivity {
         List<Map<String,String>> data = new ArrayList<Map<String,String>>();
         for (int i=0;i<contactNames.size();i++){
             Map<String,String> dataItem = new HashMap<String,String>(2);
-            dataItem.put("Contact Name",contactNames.get(i));
+            dataItem.put("Contact Name",contactNames.get(i));                 //add contact name and email to hashmap
             dataItem.put("Contact Email",contactEmails.get(i));
             data.add(dataItem);
         }
         SimpleAdapter simpleAdapter = new SimpleAdapter(ContactListActivity.this, data, android.R.layout.simple_list_item_2,
                 new String[]{"Contact Name","Contact Email"}, new int[] {android.R.id.text1,android.R.id.text2});
+                //string titles tell adapter where to put the name and email~ into text1 and text2 positions
 
         contactListView.setAdapter(simpleAdapter);
     }

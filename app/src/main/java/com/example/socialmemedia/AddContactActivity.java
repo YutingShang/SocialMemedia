@@ -40,10 +40,10 @@ public class AddContactActivity extends AppCompatActivity {
     Toolbar toolbar;
     SearchView searchView;
     ListView listView;
-    ArrayList<ArrayList<String>> detailsContactsInDatabaseArray;
-    ArrayList<String> filteredContactsArray;
-    ArrayList<String> emailAddressesInDatabaseArray;
-    ArrayList<String> alreadyAddedContactsUidArray;
+    ArrayList<ArrayList<String>> detailsContactsInDatabaseArray;   //stores uid and email of all contacts [("uid1","email1"),...]
+    ArrayList<String> filteredContactsArray;             //queried contacts
+    ArrayList<String> emailAddressesInDatabaseArray;     //stores email addresses of all contacts
+    ArrayList<String> alreadyAddedContactsUidArray;      //stores uid of current contacts
     ArrayAdapter<String> arrayAdapter;
     FirebaseAuth mAuth;
     DatabaseReference databaseReference;
@@ -78,6 +78,7 @@ public class AddContactActivity extends AppCompatActivity {
         alreadyAddedContactsUidArray = new ArrayList<String>();
 
 
+        /*retrieves all user emails from databse*/
         databaseReference.child("users").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -96,8 +97,8 @@ public class AddContactActivity extends AppCompatActivity {
                             detailsContactsInDatabaseArray.add(contactDetails);        //[("uid1","email1"),("uid2","email2")...]
                         }
 
-                        if(dataSnapshot.child("email").getValue().equals(mAuth.getCurrentUser().getEmail())){
-                            for(DataSnapshot contactDataSnapshot:snapshot.child(mAuth.getCurrentUser().getUid()).child("contacts").getChildren()){  //for every contact of user
+                        if(dataSnapshot.child("email").getValue().equals(mAuth.getCurrentUser().getEmail())){     //for current user
+                            for(DataSnapshot contactDataSnapshot:snapshot.child(mAuth.getCurrentUser().getUid()).child("contacts").getChildren()){  //iterate through contacts
                                 alreadyAddedContactsUidArray.add(contactDataSnapshot.getKey());
                                 //adds string of contact uid to an 'existing contacts' array
                             }
@@ -131,7 +132,8 @@ public class AddContactActivity extends AppCompatActivity {
         listView.setAdapter(arrayAdapter);    //displays contacts in listView
 
 
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){    //when user types into search bar
+        /*when user types into search bar*/
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
             @Override
             public boolean onQueryTextSubmit(String query){
                 if(emailAddressesInDatabaseArray.contains(query)){    //checks if query entered is an email address contact
@@ -166,6 +168,8 @@ public class AddContactActivity extends AppCompatActivity {
             }
         });
 
+
+        /*when button is pressed after a contact is selected*/
         addContactButton=findViewById(R.id.add_contact_button);
         addContactButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -178,15 +182,15 @@ public class AddContactActivity extends AppCompatActivity {
 
                     Log.d(TAG, "onClick: users added "+ alreadyAddedContactsUidArray);
                     if(alreadyAddedContactsUidArray.contains(contactUidToAdd)){
+                        Log.d(TAG, "onClick: already added contacts "+alreadyAddedContactsUidArray);
                         Toast.makeText(AddContactActivity.this, userEmailToAdd+" is already in your contacts list", Toast.LENGTH_SHORT).show();
                         //TO-DO: go to chatActivity
                     }else {
 
-
-                        //adds a new chat containing messages between this user and contact
+                        //adds a new chat for this user and contact in the database and retrieves the unique key produced
                         String chatID= databaseReference.child("chats").push().getKey();
 
-                        //add new child to chats under users triggers listener 1 (also 3)
+                        //add this chatID to the current user ~ triggers listener 1 (also 3)
                         databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("chats").child(chatID).setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
@@ -199,7 +203,7 @@ public class AddContactActivity extends AppCompatActivity {
                             }
                         });
 
-                        //creates a hashmap to add a new "chat" branch in realtime database quickly
+                        //creates a hashmap to add a new "chat" and "message" branch in realtime database quickly
                         String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
                         String welcomeMessage ="Hello this is "+mAuth.getCurrentUser().getEmail();
 
@@ -213,7 +217,7 @@ public class AddContactActivity extends AppCompatActivity {
                         chatsUpdate.put("messages/"+chatID+"/0/message",welcomeMessage);
                         chatsUpdate.put("messages/"+chatID+"/0/timestamp",timestamp);
 
-                        //adding to chats triggers listener 2
+                        //adding all atomic updates to chats and messages ~ triggers listener 2
                         databaseReference.updateChildren(chatsUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull  Task<Void> task) {

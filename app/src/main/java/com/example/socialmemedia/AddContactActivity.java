@@ -181,23 +181,12 @@ public class AddContactActivity extends AppCompatActivity {
                         Toast.makeText(AddContactActivity.this, userEmailToAdd+" is already in your contacts list", Toast.LENGTH_SHORT).show();
                         //TO-DO: go to chatActivity
                     }else {
-                        //adds new contact Uid with value of their email address under "contacts" key
-                        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("contacts").child(contactUidToAdd).setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-//                                Toast.makeText(AddContactActivity.this, "New contact " + userEmailToAdd + " added", Toast.LENGTH_SHORT).show();
-                                Log.d(TAG, "onComplete: added new contact " + userEmailToAdd);
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(AddContactActivity.this, "Error in adding new contact. " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                Log.d(TAG, "onFailure: error adding new contact. " + e.getMessage());
-                            }
-                        });
+
 
                         //adds a new chat containing messages between this user and contact
                         String chatID= databaseReference.child("chats").push().getKey();
+
+                        //add new child to chats under users triggers listener 1 (also 3)
                         databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("chats").child(chatID).setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
@@ -224,6 +213,7 @@ public class AddContactActivity extends AppCompatActivity {
                         chatsUpdate.put("messages/"+chatID+"/0/message",welcomeMessage);
                         chatsUpdate.put("messages/"+chatID+"/0/timestamp",timestamp);
 
+                        //adding to chats triggers listener 2
                         databaseReference.updateChildren(chatsUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull  Task<Void> task) {
@@ -235,6 +225,22 @@ public class AddContactActivity extends AppCompatActivity {
                             public void onFailure(@NonNull Exception e) {
 //                                Toast.makeText(AddContactActivity.this, "Failed to create chat. "+e.getMessage(), Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "onFailure: failed to add chat to database. "+e.getMessage());
+                            }
+                        });
+
+                        //adds new contact Uid with value of their email address under "contacts" key
+                        //add contacts child to users node last to trigger listener 3 again to update contact list with correct names
+                        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("contacts").child(contactUidToAdd).setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+//                                Toast.makeText(AddContactActivity.this, "New contact " + userEmailToAdd + " added", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "onComplete: added new contact " + userEmailToAdd);
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(AddContactActivity.this, "Error in adding new contact. " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "onFailure: error adding new contact. " + e.getMessage());
                             }
                         });
 

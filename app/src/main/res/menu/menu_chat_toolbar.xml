@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:title="View Contact"
+        android:id="@+id/view_contact"
+        app:showAsAction="never"
+        />
+
+<!--    <item-->
+<!--        android:title="Chat Settings"-->
+<!--        android:id="@+id/chat_settings"-->
+<!--        app:showAsAction="never"-->
+<!--        />-->
+
+    <item
+        android:title="Add Contact"
+        android:id="@+id/add_contact"
+        app:showAsAction="never"/>
+
+    <item
+        android:title="Remove Contact/Chat"
+        android:id="@+id/remove_contact_chat"
+        app:showAsAction="never"/>
+
+<!--    <item-->
+<!--        android:title="Remove Chat"-->
+<!--        android:id="@+id/remove_chat"-->
+<!--        app:showAsAction="never"/>-->
+
+    <item
+        android:title="Clear Chat"
+        android:id="@+id/clear_chat"
+        app:showAsAction="never"/>
+
+</menu>

@@ -73,19 +73,19 @@ public class ContactListActivity extends AppCompatActivity {
                 chatsDetails.clear();   //clears ArrayList to repopulate it, avoid duplication
 
                 if(snapshot.exists()){
-                    for(DataSnapshot contactSnapshot:snapshot.getChildren()){  //for every contact
+                    for(DataSnapshot contactSnapshot:snapshot.getChildren()){  //for every chat
+                        if(contactSnapshot.getValue().toString().equals("true")) {        //only display the chat if it has a value "true"
+                            ArrayList<String> thisChat = new ArrayList<String>();  //array to go inside 2d array
+                            String chatId = contactSnapshot.getKey();   //name of node is the uid
 
-                        ArrayList<String> thisChat= new ArrayList<String>();  //array to go inside 2d array
-                        String chatId=contactSnapshot.getKey();   //name of node is the uid
-
-                        //adds id to ArrayList for this chat
-                        thisChat.add(chatId);
-                        thisChat.add("timestampTemp");
-                        thisChat.add("userIdTemp");
-                        thisChat.add("nameTemp");       //temporary names and emails to give 2D arrayList structure
-                        thisChat.add("emailTemp");      //allows set() value instead of add() to arrayList - no glitch
-                        chatsDetails.add(thisChat);    //[("chatID","timestamp",userUID","userName","userEmail"),...]
-
+                            //adds id to ArrayList for this chat
+                            thisChat.add(chatId);
+                            thisChat.add("timestampTemp");
+                            thisChat.add("userIdTemp");
+                            thisChat.add("nameTemp");       //temporary names and emails to give 2D arrayList structure
+                            thisChat.add("emailTemp");      //allows set() value instead of add() to arrayList - no glitch
+                            chatsDetails.add(thisChat);    //[("chatID","timestamp",userUID","userName","userEmail"),...]
+                        }
                     }
 
                     Log.d(TAG, "onDataChange: listener 1 "+chatsDetails);
@@ -118,8 +118,8 @@ public class ContactListActivity extends AppCompatActivity {
                             String contactUid=null; //only stores single user id, doesn't work for group chats
 
                             for(DataSnapshot eachChatUser: eachChatSnapshot.child("users").getChildren()){    //for each user in chat
-                                if(!eachChatUser.getKey().equals(mAuth.getCurrentUser().getUid()) && eachChatUser.getValue().toString().equals("true")){
-                                    //if the chat user is not the current user and the user still exists -i.e. "true"
+                                if(!eachChatUser.getKey().equals(mAuth.getCurrentUser().getUid())){
+                                    //if the chat user is not the current user
                                     contactUid=eachChatUser.getKey();         //store the user ID as the contact name to be displayed on the chat
                                 }
                             }
@@ -175,6 +175,17 @@ public class ContactListActivity extends AppCompatActivity {
                     }
                     Log.d(TAG, "onDataChange: listener 3 "+chatsDetails);
 
+                    if(chatsDetails.size()>0) {
+                        if (chatsDetails.get(0).contains("nameTemp")) {  //if contact list not loaded with actual names
+                            Log.d(TAG, "onDataChange: glitch nameTemp");
+                            ContactListActivity.this.recreate();     //restarts activity
+                            finish();
+                            overridePendingTransition(0, 0);
+                            startActivity(getIntent());
+                            overridePendingTransition(0, 0);
+                        }
+                    }
+
                     setListViewAdapter();
                 }
             }
@@ -192,12 +203,16 @@ public class ContactListActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(ContactListActivity.this,ChatActivity.class);
 
+                intent.putExtra("chatID",chatsDetails.get(position).get(0));
+                intent.putExtra("contactUid",chatsDetails.get(position).get(2));
                 intent.putExtra("name",chatsDetails.get(position).get(3));  //attaches name to intent so show on chatActivity
+                intent.putExtra("email",chatsDetails.get(position).get(4));
+
                 Log.d(TAG, "onItemClick: "+chatsDetails.get(position).get(3));
                 startActivity(intent);          //goes to ChatActivity
 
                 overridePendingTransition(R.anim.slide_in_bottom,R.anim.slide_out_top);
-                //chat activity slide in from bottom, contact list activty slide out from top
+                //chat activity slide in from bottom, contact list activity slide out from top
             }
         });
 
@@ -233,6 +248,8 @@ public class ContactListActivity extends AppCompatActivity {
                 overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
             }
         });
+
+
     }
 
     /*toolbar buttons menu*/

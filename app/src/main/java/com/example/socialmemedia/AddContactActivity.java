@@ -48,8 +48,7 @@ public class AddContactActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     DatabaseReference databaseReference;
     MaterialButton addContactButton;
-    String userEmailToAdd;
-
+    String userEmailToAdd, messageNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +100,7 @@ public class AddContactActivity extends AppCompatActivity {
                             for(DataSnapshot contactDataSnapshot:snapshot.child(mAuth.getCurrentUser().getUid()).child("contacts").getChildren()){  //iterate through contacts
                                 alreadyAddedContactsUidArray.add(contactDataSnapshot.getKey());
                                 //adds string of contact uid to an 'existing contacts' array
+                                //Either is an existing contact or previously was a contact so a chat still exists
                             }
                         }
 
@@ -182,10 +182,79 @@ public class AddContactActivity extends AppCompatActivity {
 
                     Log.d(TAG, "onClick: users added "+ alreadyAddedContactsUidArray);
                     if(alreadyAddedContactsUidArray.contains(contactUidToAdd)){
-                        Log.d(TAG, "onClick: already added contacts "+alreadyAddedContactsUidArray);
-                        Toast.makeText(AddContactActivity.this, userEmailToAdd+" is already in your contacts list", Toast.LENGTH_SHORT).show();
-                        //TO-DO: go to chatActivity
-                    }else {
+
+                        //checks the state of the contact, whether there is an existing chat or old chat that was deleted
+                        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("contacts").child(contactUidToAdd).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {    //gets the contact uid
+
+                                String contactState= snapshot.getValue().toString();
+                                if(contactState.equals("true")){
+                                    Toast.makeText(AddContactActivity.this, userEmailToAdd+" is already in your contacts list", Toast.LENGTH_SHORT).show();
+                                }else if(contactState.equals("false")){
+                                    Toast.makeText(AddContactActivity.this, "A chat with "+userEmailToAdd+" already exists. You can select add contact in the chat", Toast.LENGTH_SHORT).show();
+                                }else{      //contact UID has a value of the corresponding chatID~ means chat was previously deleted
+
+                                    //sets chatID to true so that it displays again
+                                    String chatID=contactState;
+                                    databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("chats").child(chatID).setValue(true);
+                                    //sets contact to true to add contact
+                                    databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("contacts").child(contactUidToAdd).setValue(true);
+
+                                    //sends a new welcome back message, first counts number of messages to get the right index for the new message
+                                    databaseReference.child("messages").child(chatID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot snapshot) {    //all messages in chat
+
+                                            if (snapshot.exists()) {
+                                                messageNumber = String.valueOf((int)snapshot.getChildrenCount());  //this is index of new message
+                                                Log.d(TAG, "onDataChange: message No"+messageNumber);
+                                            } else {
+                                                messageNumber = "0";
+                                            }
+
+                                            //creates a hashmap to add a new "chat" and "message" branch in realtime database quickly
+                                            String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+                                            String reWelcomeMessage ="Hello im back! ("+mAuth.getCurrentUser().getEmail()+")";
+
+                                            Map<String,Object> chatsUpdate = new HashMap<>();
+                                            chatsUpdate.put("chats/"+chatID+"/lastMessage",reWelcomeMessage);
+                                            chatsUpdate.put("chats/"+chatID+"/timestamp",timestamp);
+
+                                            chatsUpdate.put("messages/"+chatID+"/"+messageNumber+"/sender",mAuth.getCurrentUser().getUid());
+                                            chatsUpdate.put("messages/"+chatID+"/"+messageNumber+"/message",reWelcomeMessage);
+                                            chatsUpdate.put("messages/"+chatID+"/"+messageNumber+"/timestamp",timestamp);
+
+                                            //updates messages and last message in chats
+                                            databaseReference.updateChildren(chatsUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull  Task<Void> task) {
+                                                    Toast.makeText(AddContactActivity.this, "Chat with "+userEmailToAdd+" re-added", Toast.LENGTH_SHORT).show();
+                                                    Log.d(TAG, "onComplete: added chat to database");
+                                                }
+                                            }).addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Log.d(TAG, "onFailure: failed to add chat to database. "+e.getMessage());
+                                                }
+                                            });
+
+                                        }
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                        }
+                                    });
+
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
+                    }else {   //completely new contact
 
                         //adds a new chat for this user and contact in the database and retrieves the unique key produced
                         String chatID= databaseReference.child("chats").push().getKey();
@@ -203,13 +272,16 @@ public class AddContactActivity extends AppCompatActivity {
                             }
                         });
 
+                        //also add this chatID to the other user
+                        databaseReference.child("users").child(contactUidToAdd).child("chats").child(chatID).setValue(true);
+
                         //creates a hashmap to add a new "chat" and "message" branch in realtime database quickly
                         String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
                         String welcomeMessage ="Hello this is "+mAuth.getCurrentUser().getEmail();
 
                         Map<String,Object> chatsUpdate = new HashMap<>();
-                        chatsUpdate.put("chats/"+chatID+"/users/"+mAuth.getCurrentUser().getUid(),true);
-                        chatsUpdate.put("chats/"+chatID+"/users/"+contactUidToAdd,true);
+                        chatsUpdate.put("chats/"+chatID+"/users/"+mAuth.getCurrentUser().getUid()+"/displayMessageNo",-1);   //index of the message to display from
+                        chatsUpdate.put("chats/"+chatID+"/users/"+contactUidToAdd+"/displayMessageNo",-1);   //-1 means show all messages
                         chatsUpdate.put("chats/"+chatID+"/lastMessage",welcomeMessage);
                         chatsUpdate.put("chats/"+chatID+"/timestamp",timestamp);
 
@@ -217,17 +289,17 @@ public class AddContactActivity extends AppCompatActivity {
                         chatsUpdate.put("messages/"+chatID+"/0/message",welcomeMessage);
                         chatsUpdate.put("messages/"+chatID+"/0/timestamp",timestamp);
 
-                        //adding all atomic updates to chats and messages ~ triggers listener 2
+                        //adding all atomic updates to chats and messages ~ triggers listener 2 for "chats"
                         databaseReference.updateChildren(chatsUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull  Task<Void> task) {
-                                Toast.makeText(AddContactActivity.this, "New chat with " + userEmailToAdd + " created", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(AddContactActivity.this, "Chat with new contact " + userEmailToAdd + " created", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "onComplete: added chat to database");
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-//                                Toast.makeText(AddContactActivity.this, "Failed to create chat. "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(AddContactActivity.this, "Failed to create chat. "+e.getMessage(), Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "onFailure: failed to add chat to database. "+e.getMessage());
                             }
                         });
@@ -237,16 +309,18 @@ public class AddContactActivity extends AppCompatActivity {
                         databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("contacts").child(contactUidToAdd).setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
-//                                Toast.makeText(AddContactActivity.this, "New contact " + userEmailToAdd + " added", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "onComplete: added new contact " + userEmailToAdd);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(AddContactActivity.this, "Error in adding new contact. " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "onFailure: error adding new contact. " + e.getMessage());
                             }
                         });
+
+                        //also add current user as contact under the recipient to avoid two chats with same people
+                        //set contact as "false" to show they haven't actually added them as a contact but a chat exists
+                        databaseReference.child("users").child(contactUidToAdd).child("contacts").child(mAuth.getCurrentUser().getUid()).setValue(false);
 
                     }
                 } else{

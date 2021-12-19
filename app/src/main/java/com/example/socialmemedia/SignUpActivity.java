@@ -41,4 +41,11 @@ public class SignUpActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onBackPressed(){
+        this.finishAffinity();
+        //closes app if back button pressed to avoid returning to settings page if just logged out
+
+    }
+
 }

@@ -112,8 +112,28 @@ public class ChatActivity extends AppCompatActivity {
                                     textBox.setText("");   //clears input box once message is added to database
                                     Log.d(TAG, "onComplete: message sent");
 
-                                    databaseReference.child("users").child(contactUid).child("chats").child(chatID).setValue(true);
+                                   // databaseReference.child("users").child(contactUid).child("chats").child(chatID).setValue(true);
                                     //sets chatID to true for other user to ensure the chat is not hidden for them
+
+                                    //checks if the other user has the chat deleted
+                                    databaseReference.child("users").child(contactUid).child("chats").child(chatID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull  DataSnapshot snapshot) {
+                                            if(snapshot.exists()){
+                                                if(snapshot.getValue().toString().equals("false")){  //i.e chatsID="false" ,contacts value is a chatID
+                                                    //contact doesn't want to add this user as a contact but has a new chat message
+                                                    databaseReference.child("users").child(contactUid).child("chats").child(chatID).setValue(true);
+                                                    databaseReference.child("users").child(contactUid).child("contacts").child(mAuth.getCurrentUser().getUid()).setValue(false);
+
+                                                }
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                        }
+                                    });
 
                                 }
                             }).addOnFailureListener(new OnFailureListener() {

@@ -75,17 +75,17 @@
 
     </LinearLayout>
 
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/recylerView"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:layout_below="@id/toolbar"-->
-<!--        android:layout_above="@+id/linear_layout"/>-->
-
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recylerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/listView"
         android:layout_below="@id/toolbar"
-        android:layout_above="@id/linear_layout"/>
+        android:layout_above="@+id/linear_layout"/>
+
+<!--    <ListView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:id="@+id/listView"-->
+<!--        android:layout_below="@id/toolbar"-->
+<!--        android:layout_above="@id/linear_layout"/>-->
 </RelativeLayout>

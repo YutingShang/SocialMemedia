@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -34,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static android.content.ContentValues.TAG;
@@ -44,12 +47,17 @@ public class ChatActivity extends AppCompatActivity {
     String chatName, chatID, contactUid, contactEmail;
     EditText textBox;
     ImageButton sendButton;
-    ListView chatListView;
-    ArrayAdapter<String> arrayAdapter;
-    ArrayList<String> messagesArray;
+//    ListView chatListView;
+//    ArrayAdapter<String> arrayAdapter;
+//    ArrayList<String> messagesArray;
     DatabaseReference databaseReference;
     FirebaseAuth mAuth;
     int messageNumber,displayFromMessageNumber;
+
+    MessageAdapter messageAdapter;
+    List<Chat> mChat;
+    RecyclerView recyclerView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,9 +85,15 @@ public class ChatActivity extends AppCompatActivity {
         databaseReference= FirebaseDatabase.getInstance().getReference();
         textBox= findViewById(R.id.text_box);
         sendButton = findViewById(R.id.send_button);
-        chatListView = findViewById(R.id.listView);
-        messagesArray= new ArrayList<>();
+//        chatListView = findViewById(R.id.listView);
+//        messagesArray= new ArrayList<>();
 
+        mChat= new ArrayList<>();
+        recyclerView=findViewById(R.id.recylerView);
+        recyclerView.setHasFixedSize(true);    //does not change height or width of view when items inserted/deleted
+        LinearLayoutManager linearLayoutManager= new LinearLayoutManager(getApplicationContext());
+        linearLayoutManager.setStackFromEnd(false);   //from bottom?
+        recyclerView.setLayoutManager(linearLayoutManager);
 
 
 
@@ -189,23 +203,28 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if(snapshot.exists()){
-                    messagesArray.clear();   //clears array to repopulate it
+//                    messagesArray.clear();   //clears array to repopulate it
+                    mChat.clear();
 
                     for(DataSnapshot dataSnapshot: snapshot.getChildren()) {  //for each message
                         Log.d(TAG, "onDataChange: message "+dataSnapshot.getKey()+" vs "+displayFromMessageNumber);
                         if(Integer.parseInt(dataSnapshot.getKey())>=displayFromMessageNumber) {    //only show messages after or = this number
                             String newMessage;
-                            if (dataSnapshot.child("sender").getValue().toString().equals(mAuth.getCurrentUser().getUid())) {   //sent by current user
-                                newMessage = dataSnapshot.child("message").getValue().toString();       //gets message from database
-                            } else {       //sent by other person
-                                newMessage = ">" + dataSnapshot.child("message").getValue().toString();
-                            }
-                            messagesArray.add(newMessage);
+                            Chat newChat= new Chat();
+                            newMessage = dataSnapshot.child("message").getValue().toString();       //gets message from database
+
+                            newChat.setMessage(newMessage);     //sets message and sender for new Chat
+                            newChat.setSender(dataSnapshot.child("sender").getValue().toString());
+                            mChat.add(newChat);       //list of Chats
                         }
                     }
+                    messageAdapter= new MessageAdapter(ChatActivity.this,mChat);
+                    //adapter chooses left or right text bubble layout depending on senderID
+                    recyclerView.setAdapter(messageAdapter);
+                    recyclerView.scrollToPosition(mChat.size()-1);  //page scrolls so new message pops up at bottom of screen
 
-                    arrayAdapter = new ArrayAdapter<String>(ChatActivity.this, android.R.layout.simple_list_item_1, messagesArray);
-                    chatListView.setAdapter(arrayAdapter);
+
+
                 }
             }
 
@@ -215,7 +234,21 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        //if keyboard pops up, messages shift up
+        recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+
+            public void onLayoutChange(View v, int left, int top, int right,int bottom, int oldLeft, int oldTop,int oldRight, int oldBottom)
+            {
+
+                recyclerView.scrollToPosition(mChat.size()-1);
+
+            }
+        });
+
     }
+
+
 
     @Override
     public void onBackPressed(){
@@ -287,9 +320,12 @@ public class ChatActivity extends AppCompatActivity {
     /**********************************/
 
     private void clearChat(){
-        messagesArray.clear();   //clears array to repopulate it
-        arrayAdapter = new ArrayAdapter<String>(ChatActivity.this, android.R.layout.simple_list_item_1, messagesArray);
-        chatListView.setAdapter(arrayAdapter);
+//        messagesArray.clear();   //clears array to repopulate it
+//        arrayAdapter = new ArrayAdapter<String>(ChatActivity.this, android.R.layout.simple_list_item_1, messagesArray);
+//        chatListView.setAdapter(arrayAdapter);
+        mChat.clear();
+        messageAdapter= new MessageAdapter(ChatActivity.this,mChat);
+        recyclerView.setAdapter(messageAdapter);
 
         //set message index to view from next time, first find how many messages there are so far
         databaseReference.child("messages").child(chatID).addListenerForSingleValueEvent(new ValueEventListener() {

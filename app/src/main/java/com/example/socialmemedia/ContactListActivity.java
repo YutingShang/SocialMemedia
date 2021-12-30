@@ -152,11 +152,18 @@ public class ContactListActivity extends AppCompatActivity {
         /*Listener 3- whenever values under users changes, update user email and name in 2D array*/
         databaseReference.child("users").addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+            public void onDataChange(@NonNull DataSnapshot snapshot) {   //snapshot of all users
 
                 ArrayList<String> contactUidArray= new ArrayList<>();
                 for (ArrayList<String> eachContact: chatsDetails){    //for every chat contact in chat Details
+
                     contactUidArray.add(eachContact.get(2));            //creates an array of UID
+
+                    if(!snapshot.child(eachContact.get(2)).exists() && !eachContact.get(2).equals("userIdTemp")){    //user has been deleted
+                        int indexIn2DArray=chatsDetails.indexOf(eachContact);
+                        chatsDetails.get(indexIn2DArray).set(3,"Memedia User");
+                        chatsDetails.get(indexIn2DArray).set(4,"Deleted Email");
+                    }
                 }
                 if (snapshot.exists()){
                     for (DataSnapshot dataSnapshot: snapshot.getChildren()){   //for every user uid

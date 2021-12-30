@@ -67,16 +67,13 @@ public class SettingsActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
-                                databaseReference.child("users").child(UidToDelete).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override  //deletes user from database
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        Log.d(TAG, "onComplete: User account deleted");
-                                        Toast.makeText(SettingsActivity.this, "User account deleted", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "onComplete: User account deleted");
+                                Toast.makeText(SettingsActivity.this, "User account deleted", Toast.LENGTH_SHORT).show();
 
-                                        Intent intent = new Intent(SettingsActivity.this, SignUpActivity.class);
-                                        startActivity(intent);    //goes back to sign in page
-                                    }
-                                });
+//                                databaseReference.child("users").child(UidToDelete).removeValue();
+
+                                Intent intent = new Intent(SettingsActivity.this, SignUpActivity.class);
+                                startActivity(intent);    //goes back to sign in page
                             }
                         }
                     }).addOnFailureListener(new OnFailureListener() {
@@ -86,6 +83,20 @@ public class SettingsActivity extends AppCompatActivity {
                             Toast.makeText(SettingsActivity.this, "Error in deleting account. Log in again to retry.  " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
+
+                    //error when placed inside delete account on complete listener
+                    databaseReference.child("users").child(UidToDelete).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Log.d(TAG, "onComplete: Deleted from database");
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "onFailure: not deleted from database. "+e.getMessage());
+                        }
+                    });
+
 
 
 

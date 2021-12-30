@@ -15,6 +15,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -59,26 +60,38 @@ public class SettingsActivity extends AppCompatActivity {
         deleteAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {    //deletes user from firebase authentication
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        Log.d(TAG, "onComplete: User account deleted");
-                        Toast.makeText(SettingsActivity.this, "User account deleted", Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, "onFailure: Error in deleting account. "+e.getMessage());
-                        Toast.makeText(SettingsActivity.this, "Error in deleting account. "+e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+                if(mAuth.getCurrentUser()!=null) {
+                    FirebaseUser fUser=mAuth.getCurrentUser();
+                    String UidToDelete=fUser.getUid();
+                    fUser.delete().addOnCompleteListener(new OnCompleteListener<Void>() {    //deletes user from firebase authentication
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                databaseReference.child("users").child(UidToDelete).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override  //deletes user from database
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        Log.d(TAG, "onComplete: User account deleted");
+                                        Toast.makeText(SettingsActivity.this, "User account deleted", Toast.LENGTH_SHORT).show();
 
-                databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).removeValue();    //deletes user from database
+                                        Intent intent = new Intent(SettingsActivity.this, SignUpActivity.class);
+                                        startActivity(intent);    //goes back to sign in page
+                                    }
+                                });
+                            }
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "onFailure: Error in deleting account. " + e.getMessage());
+                            Toast.makeText(SettingsActivity.this, "Error in deleting account. Log in again to retry.  " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
-                /*TO-DO: referential integrity - delete all instances of user UID from database*/
 
-                Intent intent = new Intent(SettingsActivity.this, SignUpActivity.class);
-                startActivity(intent);
+
+                    /*TO-DO: referential integrity - delete all instances of user UID from database*/
+
+                }
             }
         });
     }

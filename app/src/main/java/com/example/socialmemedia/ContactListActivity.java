@@ -185,7 +185,6 @@ public class ContactListActivity extends AppCompatActivity {
                             overridePendingTransition(0, 0);
                         }
                     }
-
                     setListViewAdapter();
                 }
             }

@@ -26,6 +26,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static android.content.ContentValues.TAG;
 
 
@@ -126,14 +129,20 @@ public class signUpFragment extends Fragment {
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()){
                         //add user data to a new branch on the database
-                        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("name").setValue(getString(name));
-                        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("email").setValue(getString(email).toLowerCase()).addOnCompleteListener(new OnCompleteListener<Void>() {
+//                        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("name").setValue(getString(name));
+                        Map<String,Object> newUserUpdate= new HashMap<>();
+                        newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/email",getString(email).toLowerCase());
+                        newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/name",getString(name).toLowerCase());
+
+                        databaseReference.updateChildren(newUserUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if(task.isSuccessful()){
                                     Toast.makeText(getContext(),"Sign up successful",Toast.LENGTH_SHORT).show();
                                     sendEmailVerificationWithContinueUrl();
+                                    Log.d(TAG, "onComplete: sign up successful");
                                 }
+                                Log.d(TAG, "onComplete: sign up unsuccessful");
                             }
                         }).addOnFailureListener(new OnFailureListener() {            //failed to add data to database
                             @Override
@@ -147,6 +156,7 @@ public class signUpFragment extends Fragment {
             }).addOnFailureListener(new OnFailureListener() {    //failed to create new user
                 @Override
                 public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG, "onFailure: error in signing up");
                     Toast.makeText(getContext(),"Error in signing up "+e.getMessage(),Toast.LENGTH_SHORT).show();
                 }
             });
@@ -240,34 +250,37 @@ public class signUpFragment extends Fragment {
     }
 
     /**********************dynamic link after email***************************/
-    private void sendEmailVerificationWithContinueUrl(){       //dynamic link that should redirect on any device
-        String url = "https://www.example.com/verify?uid="+mAuth.getCurrentUser().getUid();    //web link
+    private void sendEmailVerificationWithContinueUrl() {       //dynamic link that should redirect on any device
+        String url = "https://www.example.com";    //web link
         ActionCodeSettings actionCodeSettings = ActionCodeSettings.newBuilder()
                 .setUrl(url)
                 .setIOSBundleId("com.example.ios")      //ios link
-                .setAndroidPackageName("com.example.socialmemedia",false,null)
+                .setAndroidPackageName("com.example.socialmemedia", false, null)
                 //android link if app detected as installed
                 .build();
 
-        mAuth.getCurrentUser().sendEmailVerification(actionCodeSettings).addOnCompleteListener(new OnCompleteListener<Void>() {
-            /**actionCodeSettings means the continue url will be triggered after the link is clicked
-             so user should be redirected back to the app if they are on android**/
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    Log.d(TAG, "onComplete: email verification continue url sent");
-                    Toast.makeText(getContext(), "Verification email sent to "+mAuth.getCurrentUser().getEmail(), Toast.LENGTH_SHORT).show();
-                    //no need to call sendUser() because email link will redirect to the app, and the OnStart() the user would be logged in
+        if (mAuth.getCurrentUser() != null) {
+            mAuth.getCurrentUser().sendEmailVerification(actionCodeSettings).addOnCompleteListener(new OnCompleteListener<Void>() {
+                /**
+                 * actionCodeSettings means the continue url will be triggered after the link is clicked
+                 * so user should be redirected back to the app if they are on android
+                 **/
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "onComplete: email verification continue url sent");
+                        Toast.makeText(getContext(), "Verification email sent to " + mAuth.getCurrentUser().getEmail(), Toast.LENGTH_SHORT).show();
+                        //no need to call sendUser() because email link will redirect to the app, and the OnStart() the user would be logged in
+                    }
                 }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, "onFailure: verification url"+e.getMessage());
-                Toast.makeText(getContext(), "Email verification link not sent. "+e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG, "onFailure: verification url" + e.getMessage());
+                    Toast.makeText(getContext(), "Email verification link not sent. " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
-
 
 }

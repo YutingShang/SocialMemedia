@@ -73,4 +73,15 @@ public class SettingsActivity extends AppCompatActivity {
         super.onBackPressed();
         overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
     }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        mAuth=FirebaseAuth.getInstance();
+        if(mAuth.getCurrentUser()==null){
+            Intent intent= new Intent(SettingsActivity.this,SignUpActivity.class);
+            startActivity(intent);
+            //prevent glitches on signing up to this page
+        }
+    }
 }

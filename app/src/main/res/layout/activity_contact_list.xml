@@ -6,28 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ContactListActivity">
 
-<!--    <TextView-->
-<!--        android:id="@+id/contactListtext"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="@string/contactListPage"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintLeft_toLeftOf="parent"-->
-<!--        app:layout_constraintRight_toRightOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
 
-
-    <!--    <ImageButton-->
-    <!--        android:id="@+id/settingsButton"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:src="@drawable/ic_baseline_settings_24"-->
-    <!--        app:layout_constraintEnd_toEndOf="parent"-->
-    <!--        app:layout_constraintTop_toTopOf="parent"-->
-    <!--        android:layout_marginTop="@dimen/generalSpace"-->
-    <!--        android:layout_marginEnd="@dimen/generalSpace"-->
-    <!--        style="?android:borderlessButtonStyle"-->
-    <!--        app:tint="@color/fresco_pink" />-->
 
     <ListView
         android:id="@+id/contactListView"
@@ -36,7 +15,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0.0"
-        android:layout_marginVertical="?actionBarSize">
+        android:layout_marginVertical="?actionBarSize"
+        >
 
     </ListView>
 

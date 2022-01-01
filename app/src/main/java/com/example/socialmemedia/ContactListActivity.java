@@ -49,7 +49,7 @@ public class ContactListActivity extends AppCompatActivity {
     ListView contactListView;
 //    ArrayList<String> users = new ArrayList<String>(Arrays.asList("Joe","Ori","Ben","Bob","Ned","Tim","Uma","Mia","Edi","Zak","Ali","Tom","Max","Pip","Dan","Kev","Jil","Ido"));
 
-    ArrayList<ArrayList<String>> chatsDetails;     //[("chatID","timestamp",userUID","userName","userEmail"),...]
+    ArrayList<ArrayList<String>> chatsDetails;     //[("chatID","timestamp",userUID","userName","userEmail","lastMessage"),...]
     BottomNavigationView bottomNavigationView;
     Toolbar toolbar;
     FloatingActionButton floatingActionButton;
@@ -84,6 +84,7 @@ public class ContactListActivity extends AppCompatActivity {
                             thisChat.add("userIdTemp");
                             thisChat.add("nameTemp");       //temporary names and emails to give 2D arrayList structure
                             thisChat.add("emailTemp");      //allows set() value instead of add() to arrayList - no glitch
+                            thisChat.add("lastMessageTemp");
                             chatsDetails.add(thisChat);    //[("chatID","timestamp",userUID","userName","userEmail"),...]
                         }
                     }
@@ -115,6 +116,7 @@ public class ContactListActivity extends AppCompatActivity {
                             int indexIn2DArray=chatsIdArray.indexOf(eachChatSnapshot.getKey());   //gets index of where chat UID is
 
                             String timestamp=eachChatSnapshot.child("timestamp").getValue().toString();
+                            String lastMessage=eachChatSnapshot.child("lastMessage").getValue().toString();
                             String contactUid=null; //only stores single user id, doesn't work for group chats
 
                             for(DataSnapshot eachChatUser: eachChatSnapshot.child("users").getChildren()){    //for each user in chat
@@ -125,6 +127,7 @@ public class ContactListActivity extends AppCompatActivity {
                             }
                             chatsDetails.get(indexIn2DArray).set(1,timestamp);
                             chatsDetails.get(indexIn2DArray).set(2,contactUid);   //set timestamp and uid under correct chat id in 2D chats array
+                            chatsDetails.get(indexIn2DArray).set(5,lastMessage);
                         }
                     }
 
@@ -289,24 +292,28 @@ public class ContactListActivity extends AppCompatActivity {
 
     //simple adapter populates a ListView with 2 lines of data
     private void setListViewAdapter(){
-        ArrayList<String> contactNames = new ArrayList<>();       //two 1D arraylists to store the contact name and email from 2D array
-        ArrayList<String> contactEmails = new ArrayList<>();
+        ArrayList<String> contactNames = new ArrayList<>();       //two 1D arraylists to store the contact name and last message from 2D array
+        ArrayList<String> lastMessages = new ArrayList<>();
 
         for (ArrayList<String> arrayList:chatsDetails){
             contactNames.add(arrayList.get(3));
-            contactEmails.add(arrayList.get(4));
+            String message=arrayList.get(5);
+            if(message.length()>30){                     //shortens message if too long
+                message=message.substring(0,30)+"...";
+            }
+            lastMessages.add(message);
         }
 
         List<Map<String,String>> data = new ArrayList<Map<String,String>>();
         for (int i=0;i<contactNames.size();i++){
             Map<String,String> dataItem = new HashMap<String,String>(2);
-            dataItem.put("Contact Name",contactNames.get(i));                 //add contact name and email to hashmap
-            dataItem.put("Contact Email",contactEmails.get(i));
+            dataItem.put("Contact Name",contactNames.get(i));                 //add contact name and last message to hashmap
+            dataItem.put("Last Message",lastMessages.get(i));
             data.add(dataItem);
         }
         SimpleAdapter simpleAdapter = new SimpleAdapter(ContactListActivity.this, data, android.R.layout.simple_list_item_2,
-                new String[]{"Contact Name","Contact Email"}, new int[] {android.R.id.text1,android.R.id.text2});
-                //string titles tell adapter where to put the name and email~ into text1 and text2 positions
+                new String[]{"Contact Name","Last Message"}, new int[] {android.R.id.text1,android.R.id.text2});
+                //string titles tell adapter where to put the name and last message~ into text1 and text2 positions
 
         contactListView.setAdapter(simpleAdapter);
     }

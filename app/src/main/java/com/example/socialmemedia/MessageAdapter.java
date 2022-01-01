@@ -26,12 +26,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         this.context=context;
         this.mChat = mChat;
 
-
     }
 
     @NonNull
     @Override
     public MessageAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        //sets layout depending on viewType
         if(viewType==MSG_TYPE_RIGHT){
             View view = LayoutInflater.from(context).inflate(R.layout.chat_item_right,parent,false);
             return new MessageAdapter.ViewHolder(view);
@@ -39,7 +39,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             View view = LayoutInflater.from(context).inflate(R.layout.chat_item_left,parent,false);
             return new MessageAdapter.ViewHolder(view);
         }
-
 
     }
 
@@ -50,9 +49,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull MessageAdapter.ViewHolder holder, int position) {
+        //update contents of itemView to reflect item at given position
         Chat chat=mChat.get(position);
         holder.show_message.setText(chat.getMessage());
-
 
     }
 
@@ -64,7 +63,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             super(itemView);
 
             show_message =itemView.findViewById(R.id.show_message);
-            
+            //describes what location of components of itemView
             
         }
 
@@ -74,6 +73,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         firebaseUser= FirebaseAuth.getInstance().getCurrentUser();
         if(mChat.get(position).getSender().equals(firebaseUser.getUid())){
             return MSG_TYPE_RIGHT;
+            //adapter chooses left or right text bubble layout depending on senderID
         }else{
             return MSG_TYPE_LEFT;
         }

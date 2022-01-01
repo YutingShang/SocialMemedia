@@ -47,9 +47,7 @@ public class ChatActivity extends AppCompatActivity {
     String chatName, chatID, contactUid, contactEmail;
     EditText textBox;
     ImageButton sendButton;
-//    ListView chatListView;
-//    ArrayAdapter<String> arrayAdapter;
-//    ArrayList<String> messagesArray;
+
     DatabaseReference databaseReference;
     FirebaseAuth mAuth;
     int messageNumber,displayFromMessageNumber;
@@ -85,14 +83,13 @@ public class ChatActivity extends AppCompatActivity {
         databaseReference= FirebaseDatabase.getInstance().getReference();
         textBox= findViewById(R.id.text_box);
         sendButton = findViewById(R.id.send_button);
-//        chatListView = findViewById(R.id.listView);
-//        messagesArray= new ArrayList<>();
+
 
         mChat= new ArrayList<>();
         recyclerView=findViewById(R.id.recylerView);
         recyclerView.setHasFixedSize(true);    //does not change height or width of view when items inserted/deleted
         LinearLayoutManager linearLayoutManager= new LinearLayoutManager(getApplicationContext());
-        linearLayoutManager.setStackFromEnd(false);   //from bottom?
+        linearLayoutManager.setStackFromEnd(false);   //so messages go to top of page if space
         recyclerView.setLayoutManager(linearLayoutManager);
 
 
@@ -126,9 +123,6 @@ public class ChatActivity extends AppCompatActivity {
                                     textBox.setText("");   //clears input box once message is added to database
                                     Log.d(TAG, "onComplete: message sent");
 
-                                   // databaseReference.child("users").child(contactUid).child("chats").child(chatID).setValue(true);
-                                    //sets chatID to true for other user to ensure the chat is not hidden for them
-
                                     //checks if the other user has the chat deleted
                                     databaseReference.child("users").child(contactUid).child("chats").child(chatID).addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
@@ -136,6 +130,7 @@ public class ChatActivity extends AppCompatActivity {
                                             if(snapshot.exists()){
                                                 if(snapshot.getValue().toString().equals("false")){  //i.e chatsID="false" ,contacts value is a chatID
                                                     //contact doesn't want to add this user as a contact but has a new chat message
+                                                    //so sets chatID to true for other user to ensure the chat is not hidden for them
                                                     databaseReference.child("users").child(contactUid).child("chats").child(chatID).setValue(true);
                                                     databaseReference.child("users").child(contactUid).child("contacts").child(mAuth.getCurrentUser().getUid()).setValue(false);
 
@@ -168,7 +163,7 @@ public class ChatActivity extends AppCompatActivity {
                             }).addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull  Exception e) {
-                                    Log.d(TAG, "onFailure: last message not upated. "+e.getMessage());
+                                    Log.d(TAG, "onFailure: last message not updated. "+e.getMessage());
                                 }
                             });
                         }
@@ -203,8 +198,8 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if(snapshot.exists()){
-//                    messagesArray.clear();   //clears array to repopulate it
-                    mChat.clear();
+//
+                    mChat.clear();  //clears array to repopulate it
 
                     for(DataSnapshot dataSnapshot: snapshot.getChildren()) {  //for each message
                         Log.d(TAG, "onDataChange: message "+dataSnapshot.getKey()+" vs "+displayFromMessageNumber);
@@ -219,10 +214,10 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     }
                     messageAdapter= new MessageAdapter(ChatActivity.this,mChat);
-                    //adapter chooses left or right text bubble layout depending on senderID
+                    //adapter sets the layout for the messages
                     recyclerView.setAdapter(messageAdapter);
-                    recyclerView.scrollToPosition(mChat.size()-1);  //page scrolls so new message pops up at bottom of screen
-
+                    recyclerView.scrollToPosition(mChat.size()-1);
+                    //page scrolls so new message pops up at bottom of screen if messages fill screen
 
 
                 }
@@ -240,9 +235,7 @@ public class ChatActivity extends AppCompatActivity {
 
             public void onLayoutChange(View v, int left, int top, int right,int bottom, int oldLeft, int oldTop,int oldRight, int oldBottom)
             {
-
                 recyclerView.scrollToPosition(mChat.size()-1);
-
             }
         });
 
@@ -320,10 +313,8 @@ public class ChatActivity extends AppCompatActivity {
     /**********************************/
 
     private void clearChat(){
-//        messagesArray.clear();   //clears array to repopulate it
-//        arrayAdapter = new ArrayAdapter<String>(ChatActivity.this, android.R.layout.simple_list_item_1, messagesArray);
-//        chatListView.setAdapter(arrayAdapter);
-        mChat.clear();
+
+        mChat.clear();   //clears array so nothing displays
         messageAdapter= new MessageAdapter(ChatActivity.this,mChat);
         recyclerView.setAdapter(messageAdapter);
 

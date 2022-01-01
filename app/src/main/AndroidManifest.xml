@@ -9,20 +9,28 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SocialMemedia">
-        <activity android:name=".AddContactActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".MemeFeedActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".MemeMenuActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".SettingsActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".ChatActivity"
+        <activity android:name=".DeleteAccountActivity"></activity>
+        <activity
+            android:name=".AddContactActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MemeFeedActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MemeMenuActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SettingsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ChatActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize"/>
-        <activity android:name=".ContactListActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".SignUpActivity"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ContactListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SignUpActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

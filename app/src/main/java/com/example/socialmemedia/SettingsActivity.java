@@ -60,49 +60,10 @@ public class SettingsActivity extends AppCompatActivity {
         deleteAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mAuth.getCurrentUser()!=null) {
-                    FirebaseUser fUser=mAuth.getCurrentUser();
-                    String UidToDelete=fUser.getUid();
-                    fUser.delete().addOnCompleteListener(new OnCompleteListener<Void>() {    //deletes user from firebase authentication
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "onComplete: User account deleted");
-                                Toast.makeText(SettingsActivity.this, "User account deleted", Toast.LENGTH_SHORT).show();
+                Intent intent= new Intent(SettingsActivity.this,DeleteAccountActivity.class);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_left);
 
-//                                databaseReference.child("users").child(UidToDelete).removeValue();
-
-                                Intent intent = new Intent(SettingsActivity.this, SignUpActivity.class);
-                                startActivity(intent);    //goes back to sign in page
-                            }
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.d(TAG, "onFailure: Error in deleting account. " + e.getMessage());
-                            Toast.makeText(SettingsActivity.this, "Error in deleting account. Log in again to retry.  " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-                    //error when placed inside delete account on complete listener
-                    databaseReference.child("users").child(UidToDelete).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            Log.d(TAG, "onComplete: Deleted from database");
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.d(TAG, "onFailure: not deleted from database. "+e.getMessage());
-                        }
-                    });
-
-
-
-
-                    /*TO-DO: referential integrity - delete all instances of user UID from database*/
-
-                }
             }
         });
     }

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".DeleteAccountActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/fresco_blue"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="?homeAsUpIndicator"
+        app:title="Delete Account"
+        app:titleTextColor="@color/fresco_pink" />
+
+    <EditText
+        android:id="@+id/password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/widerGeneralSpace"
+        android:background="@color/transparent_off_white"
+        android:ems="10"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:paddingVertical="@dimen/generalSpace"
+        android:paddingLeft="@dimen/generalSpace"
+        android:textColor="@color/fresco_blue"
+        android:textColorHint="@color/light_grey"
+        android:textCursorDrawable="@drawable/custom_edit_text_cursor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/deletion_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/deletion_instructions"
+        app:layout_constraintBottom_toTopOf="@+id/password"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginHorizontal="@dimen/widerGeneralSpace"
+        android:layout_marginVertical="@dimen/widerGeneralSpace"
+        android:textSize="@dimen/textSize"
+        style="@style/Theme.SocialMemedia"/>
+
+    <Button
+        android:id="@+id/deleteAccountButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="30dp"
+        android:layout_marginTop="0dp"
+        app:backgroundTint="@color/pastel_red"
+        android:textColor="@color/white"
+        android:text="@string/delete_account"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_margin="@dimen/widerGeneralSpace"
+        app:layout_constraintTop_toBottomOf="@+id/password" />
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,49 +6,35 @@
     android:layout_height="match_parent"
     tools:context=".ChatActivity">
 
-
-<!--    <ImageButton-->
-<!--        android:id="@+id/backButton"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginStart="@dimen/generalSpace"-->
-<!--        android:layout_marginTop="@dimen/generalSpace"-->
-<!--        android:src="@drawable/ic_baseline_arrow_back_24"-->
-<!--        app:tint="@color/fresco_pink"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        style="?android:borderlessButtonStyle" />-->
-
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        android:background="@color/fresco_blue"
-        app:titleTextColor="@color/fresco_pink"
         android:layout_alignParentTop="true"
+        android:background="@color/fresco_blue"
         android:elevation="4dp"
-        app:title="Username"
-        app:navigationIcon="?homeAsUpIndicator"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar" />
-<!-- DayNight allows inline menu to display black/white text depending on light/dark theme-->
+        app:navigationIcon="?homeAsUpIndicator"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
+        app:title="Username"
+        app:titleTextColor="@color/fresco_pink" />
+    <!-- DayNight allows inline menu to display black/white text depending on light/dark theme-->
+
     <LinearLayout
         android:id="@+id/linear_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_alignParentBottom="true"
         android:background="#EEE6E6E6"
+        android:orientation="horizontal"
         android:paddingVertical="5dp"
-        android:paddingLeft="8dp"
-
- >
+        android:paddingLeft="8dp">
 
         <EditText
             android:id="@+id/text_box"
-            android:layout_gravity="center"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_weight="1"
             android:background="@drawable/rounded_edit_text"
             android:hint="Type message..."
@@ -70,8 +56,7 @@
             android:layout_marginStart="0dp"
             android:padding="0dp"
             android:src="@drawable/ic_baseline_send_30"
-            app:tint="@color/fresco_blue"
-        />
+            app:tint="@color/fresco_blue" />
 
     </LinearLayout>
 
@@ -79,13 +64,7 @@
         android:id="@+id/recylerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar"
-        android:layout_above="@+id/linear_layout"/>
+        android:layout_above="@+id/linear_layout"
+        android:layout_below="@id/toolbar" />
 
-<!--    <ListView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:id="@+id/listView"-->
-<!--        android:layout_below="@id/toolbar"-->
-<!--        android:layout_above="@id/linear_layout"/>-->
 </RelativeLayout>

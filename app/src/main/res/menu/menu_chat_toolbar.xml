@@ -8,12 +8,6 @@
         app:showAsAction="never"
         />
 
-<!--    <item-->
-<!--        android:title="Chat Settings"-->
-<!--        android:id="@+id/chat_settings"-->
-<!--        app:showAsAction="never"-->
-<!--        />-->
-
     <item
         android:title="Add Contact"
         android:id="@+id/add_contact"
@@ -23,11 +17,6 @@
         android:title="Remove Contact/Chat"
         android:id="@+id/remove_contact_chat"
         app:showAsAction="never"/>
-
-<!--    <item-->
-<!--        android:title="Remove Chat"-->
-<!--        android:id="@+id/remove_chat"-->
-<!--        app:showAsAction="never"/>-->
 
     <item
         android:title="Clear Chat"

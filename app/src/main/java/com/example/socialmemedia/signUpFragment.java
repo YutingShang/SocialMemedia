@@ -129,10 +129,14 @@ public class signUpFragment extends Fragment {
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()){
                         //add user data to a new branch on the database
-//                        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child("name").setValue(getString(name));
                         Map<String,Object> newUserUpdate= new HashMap<>();
                         newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/email",getString(email).toLowerCase());
                         newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/name",getString(name).toLowerCase());
+
+                        EncryptionManager encryptionManager = new EncryptionManager();
+                        newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/privateKey",encryptionManager.getPrivateKey());
+                        newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/publicKey",encryptionManager.getPublicKey());
+                        newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/publicModulus",encryptionManager.getPublicModulus());
 
                         databaseReference.updateChildren(newUserUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
@@ -142,7 +146,6 @@ public class signUpFragment extends Fragment {
                                     sendEmailVerificationWithContinueUrl();
                                     Log.d(TAG, "onComplete: sign up successful");
                                 }
-                                Log.d(TAG, "onComplete: sign up unsuccessful");
                             }
                         }).addOnFailureListener(new OnFailureListener() {            //failed to add data to database
                             @Override

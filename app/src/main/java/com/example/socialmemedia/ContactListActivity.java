@@ -85,7 +85,7 @@ public class ContactListActivity extends AppCompatActivity {
                             thisChat.add("nameTemp");       //temporary names and emails to give 2D arrayList structure
                             thisChat.add("emailTemp");      //allows set() value instead of add() to arrayList - no glitch
                             thisChat.add("lastMessageTemp");
-                            chatsDetails.add(thisChat);    //[("chatID","timestamp",userUID","userName","userEmail"),...]
+                            chatsDetails.add(thisChat);    //[("chatID","timestamp",userUID","userName","userEmail","lastMessage"),...]
                         }
                     }
 

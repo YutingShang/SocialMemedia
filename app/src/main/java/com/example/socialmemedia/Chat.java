@@ -4,7 +4,6 @@ public class Chat {
 
     private String sender;
     private String message;
-    private String timestamp;
 
     public Chat(String givenSender, String givenMessage){
         this.sender=givenSender;

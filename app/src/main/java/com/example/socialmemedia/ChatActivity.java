@@ -56,6 +56,7 @@ public class ChatActivity extends AppCompatActivity {
     List<Chat> mChat;
     RecyclerView recyclerView;
 
+    String publicKeySelf,privateKeySelf,publicKeyOther;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +93,8 @@ public class ChatActivity extends AppCompatActivity {
         linearLayoutManager.setStackFromEnd(false);   //so messages go to top of page if space
         recyclerView.setLayoutManager(linearLayoutManager);
 
+
+        /**getting the public and private keys**/
 
 
         /*sending a message*/
@@ -343,4 +346,6 @@ public class ChatActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.slide_in_top,R.anim.slide_out_bottom);
         //ContactList activity will slide in from top, ChatActivity will slide out from bottom
     }
+
+
 }

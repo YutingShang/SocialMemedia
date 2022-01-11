@@ -40,7 +40,7 @@ public class AddContactActivity extends AppCompatActivity {
     Toolbar toolbar;
     SearchView searchView;
     ListView listView;
-    ArrayList<ArrayList<String>> detailsContactsInDatabaseArray;   //stores uid and email of all contacts [("uid1","email1"),...]
+    ArrayList<ArrayList<String>> detailsContactsInDatabaseArray;   //stores uid, email & public key & modulus of all contacts [("uid1","email1","publicKey","publicModulus"),...]
     ArrayList<String> filteredContactsArray;             //queried contacts
     ArrayList<String> emailAddressesInDatabaseArray;     //stores email addresses of all contacts
     ArrayList<String> alreadyAddedContactsUidArray;      //stores uid of current contacts
@@ -49,6 +49,7 @@ public class AddContactActivity extends AppCompatActivity {
     DatabaseReference databaseReference;
     MaterialButton addContactButton;
     String userEmailToAdd, messageNumber;
+    int publicKeySelf, publicModulusSelf;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +78,7 @@ public class AddContactActivity extends AppCompatActivity {
         alreadyAddedContactsUidArray = new ArrayList<String>();
 
 
-        /*retrieves all user emails from databse*/
+        /*retrieves all user emails and uid from databse*/
         databaseReference.child("users").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -91,8 +92,10 @@ public class AddContactActivity extends AppCompatActivity {
                         /*delete IF if want a chat to self feature available*/
                         if(!dataSnapshot.child("email").getValue().equals(mAuth.getCurrentUser().getEmail())){
                             ArrayList<String> contactDetails = new ArrayList<String>();
-                            contactDetails.add(dataSnapshot.getKey());        //gets the name of the snapshot
+                            contactDetails.add(dataSnapshot.getKey());        //gets the name of the snapshot (uid)
                             contactDetails.add(dataSnapshot.child("email").getValue().toString());
+                            contactDetails.add(dataSnapshot.child("publicKey").getValue().toString());
+                            contactDetails.add(dataSnapshot.child("publicModulus").getValue().toString());
                             detailsContactsInDatabaseArray.add(contactDetails);        //[("uid1","email1"),("uid2","email2")...]
                         }
 
@@ -102,6 +105,9 @@ public class AddContactActivity extends AppCompatActivity {
                                 //adds string of contact uid to an 'existing contacts' array
                                 //Either is an existing contact or previously was a contact so a chat still exists
                             }
+                            publicKeySelf = Integer.parseInt(dataSnapshot.child("publicKey").getValue().toString());
+                            publicModulusSelf = Integer.parseInt(dataSnapshot.child("publicModulus").getValue().toString());
+                            //retrieves the public key for self
                         }
 
                     }
@@ -279,9 +285,22 @@ public class AddContactActivity extends AppCompatActivity {
                         String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
                         String welcomeMessage ="Hello this is "+mAuth.getCurrentUser().getEmail();
 
+                        EncryptionManager encryptionManager = new EncryptionManager();
+                        int symmetricKeyChat = encryptionManager.getRandInt(1,9);  //generates random symmetric key num between 1-9
+                        int publicKeyOther = Integer.parseInt(detailsContactsInDatabaseArray.get(emailAddressesInDatabaseArray.indexOf(userEmailToAdd)).get(2));
+                        int publicModulusOther = Integer.parseInt(detailsContactsInDatabaseArray.get(emailAddressesInDatabaseArray.indexOf(userEmailToAdd)).get(3));
+                        //gets public key & modulus of other user from the 2D array, which was retrieved from the database
+                        String encryptedSymKeySelf = encryptionManager.RSAencrypt(String.valueOf(symmetricKeyChat),publicKeySelf,publicModulusSelf);
+                        String encryptedSymKeyOther = encryptionManager.RSAencrypt(String.valueOf(symmetricKeyChat),publicKeyOther,publicModulusOther);
+                        //makes two copies of the symmetricKeyChat, one encrypted for each user
+
+
                         Map<String,Object> chatsUpdate = new HashMap<>();
                         chatsUpdate.put("chats/"+chatID+"/users/"+mAuth.getCurrentUser().getUid()+"/displayMessageNo",-1);   //index of the message to display from
                         chatsUpdate.put("chats/"+chatID+"/users/"+contactUidToAdd+"/displayMessageNo",-1);   //-1 means show all messages
+                        chatsUpdate.put("chats/"+chatID+"/users/"+mAuth.getCurrentUser().getUid()+"/chatSymmetricKey",encryptedSymKeySelf);
+                        chatsUpdate.put("chats/"+chatID+"/users/"+contactUidToAdd+"/chatSymmetricKey",encryptedSymKeyOther);
+
                         chatsUpdate.put("chats/"+chatID+"/lastMessage",welcomeMessage);
                         chatsUpdate.put("chats/"+chatID+"/timestamp",timestamp);
 

@@ -27,6 +27,7 @@ package com.example.socialmemedia;
 import android.content.Intent;
 import android.util.Log;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,8 +38,12 @@ public class EncryptionManager {
 
     public static void main(String[] args) {
         EncryptionManager encryptionManager = new EncryptionManager();
-        System.out.println("Yo "+encryptionManager.RSAencrypt("hi",5,700));
+        String encryptedMessage = encryptionManager.RSAencrypt("ooh shaka laka oof 哈哈 🆒",410589,948667);
+        System.out.println("Encrypted "+encryptedMessage);
+        System.out.println("Decrypted "+encryptionManager.RSAdecrypt(encryptedMessage,171989,948667));
+
 //        System.out.println("unicode "+Integer.toString('d'));
+
 //        String.valueOf('h').codePoints().mapToObj(Integer::toOctalString).forEach(System.out::println);
 //        EncryptionManager encryptionManager = new EncryptionManager();
 
@@ -239,6 +244,9 @@ public class EncryptionManager {
         }
         System.out.println("octal "+octalPlaintextUnicode);
 
+        /*split into blocks of equal length
+          add "9" as padding to the last block
+         */
         ArrayList<String> plaintextBlocksList = new ArrayList<>();   //2D array containing blocks of text, separated into equal sizes
         int blockLength = String.valueOf(publicModulusR).length()-1; // to ensure each message block value < modulus value
         System.out.println("blocklength "+blockLength);
@@ -246,26 +254,85 @@ public class EncryptionManager {
         while (startPointer<octalPlaintextUnicode.length()){
             String block;
             if(startPointer+blockLength<octalPlaintextUnicode.length()) {   //if there are still more full blocks
-                block = octalPlaintextUnicode.substring(startPointer, startPointer + blockLength);
+                block = octalPlaintextUnicode.substring(startPointer, startPointer + blockLength);   //creates blocks of plaintext
             }else {
                 block = octalPlaintextUnicode.substring(startPointer);   //if final block is too short just add what is left
+                //but also pad block with 9's at end so that it is the block length
+                block += new String(new char[blockLength-block.length()]).replace("\0","9");
+                //creates empty string, then replace empty with 9's
             }
             startPointer+=blockLength;
             plaintextBlocksList.add(block);
         }
+        System.out.println(plaintextBlocksList);
 
         /**encryption**/
         /*c=m^e mod r   encrypt in denary
-          convert to octal
-          pad with 9 at the end of each block
+          convert to octal 0-7
+          pad with 9 at the end of each block - different to the 9 used for the last block padding, as the encrypted block is turned to octal again
          */
         String octalEncryptedText ="";
         for (String messageBlock: plaintextBlocksList){
-            int denaryValueEncryptedBlock = (int)Math.pow(Integer.valueOf(messageBlock),publicKey) % publicModulusR;
-            octalEncryptedText+= Integer.toOctalString(denaryValueEncryptedBlock)+"9";
+//            System.out.println("messageBlock "+messageBlock);
+            BigInteger messageBlockBigInt = new BigInteger(messageBlock);
+            BigInteger publicKeyBigInt = new BigInteger(String.valueOf(publicKey));
+            BigInteger publicModulusBigInt = new BigInteger(String.valueOf(publicModulusR));
+
+            BigInteger denaryValueEncryptedBlockBigInteger = messageBlockBigInt.modPow(publicKeyBigInt,publicModulusBigInt);
+//            System.out.println("denary encrypt block: "+ denaryValueEncryptedBlockBigInteger.toString());
+            octalEncryptedText+= Integer.toOctalString(Integer.parseInt(denaryValueEncryptedBlockBigInteger.toString()))+"9";
         }
 
         return octalEncryptedText;
+    }
+
+    //DECRYPTION
+    public String RSAdecrypt(String cipherMessage, int privateKey, int publicModulusR){
+    /*1)remove 9s to obtain octal blocks
+    2)convert from octal blocks to denary blocks
+    3)**RSA decrypt to get denary plaintext - each block pad with 0's and get rid of 9's at end
+    4)split using 8's to get separate octal unicode characters
+    5)convert octal to denary unicode
+    6)convert to symbols
+     */
+        ArrayList<String> octalCipherBlockList = new ArrayList<>( Arrays.asList(cipherMessage.split("9")));
+
+        String octalDecryptedText="";
+        int blockLength = String.valueOf(publicModulusR).length()-1; //ensure decrypted blocks are the original block length
+
+        for (String octalBlock: octalCipherBlockList){
+            int denaryCipherBlock = Integer.parseInt(octalBlock,8);  //converts octal to denary
+            BigInteger denaryCipherBlockBigInt = new BigInteger(String.valueOf(denaryCipherBlock));
+            BigInteger privateKeyBigInt = new BigInteger(String.valueOf(privateKey));
+            BigInteger publicModulusBigInt = new BigInteger(String.valueOf(publicModulusR));
+
+            //Decryption: m=c^d mod r
+            BigInteger octalValueDecryptedBlockBigInt = denaryCipherBlockBigInt.modPow(privateKeyBigInt,publicModulusBigInt);
+            String octalValueDecryptedBlock = String.valueOf(octalValueDecryptedBlockBigInt);
+
+            String padding = new String(new char[blockLength-String.valueOf(octalValueDecryptedBlock).length()]).replace("\0","0");
+            //if the decrypted block is not the defined block length as it should be,
+            //then some 0's may have been omitted at the start, which are lost due to mathematical redundancy
+            //the last block was filled with 9's to make it up to block length, so should still work out missing 0's if any
+            octalValueDecryptedBlock = padding + octalValueDecryptedBlock;
+
+            if(octalCipherBlockList.indexOf(octalBlock)==octalCipherBlockList.size()-1){   //for the last block
+            //remove empty space placeholder 9's for the block, which may be shorter than block length
+                octalValueDecryptedBlock= octalValueDecryptedBlock.replace("9","");
+            }
+
+            octalDecryptedText+=octalValueDecryptedBlock;
+        }
+
+        ArrayList<String> octalCharacterUnicodeList = new ArrayList<>(Arrays.asList(octalDecryptedText.split("8")));
+        String decryptedTextMessage = "";
+
+        for(String characterUnicode: octalCharacterUnicodeList){
+            int denaryUnicode = Integer.parseInt(characterUnicode,8);   //convert octal to denary
+            decryptedTextMessage += (char) denaryUnicode;    //convert unicode to character
+        }
+
+        return decryptedTextMessage;
     }
 
 

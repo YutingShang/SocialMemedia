@@ -38,13 +38,28 @@ public class EncryptionManager {
 
     public static void main(String[] args) {
         EncryptionManager encryptionManager = new EncryptionManager();
-        String encryptedMessage = encryptionManager.RSAencrypt("ooh shaka laka oof 哈哈 🆒",410589,948667);
-        System.out.println("Encrypted "+encryptedMessage);
-        System.out.println("Decrypted "+encryptionManager.RSAdecrypt(encryptedMessage,171989,948667));
+//        for (int i=1;i<10;i++){
+//            System.out.println("E: "+encryptionManager.RSAencrypt(String.valueOf(i), encryptionManager.publicKey, encryptionManager.getPublicModulus()));
+//        }
 
-        String symEncryptMessage = encryptionManager.symmetricEncrypt("a oof 哈哈 🆒",4);
-        System.out.println("Encrypted: "+symEncryptMessage);
-        System.out.println("Decrypted: "+ encryptionManager.symmetricDecrypt(symEncryptMessage,4));
+//        String encrypt = encryptionManager.RSAencrypt("9", encryptionManager.publicKey, encryptionManager.publicModulus);
+//        System.out.println("E: "+encrypt);
+//
+//        System.out.println("D: "+encryptionManager.RSAdecrypt(encrypt, encryptionManager.privateKey, encryptionManager.publicModulus));
+//
+//        String encrypt2 = encryptionManager.RSAencrypt("9sdfsdf", 92099, 107221);
+//        System.out.println("E: "+encrypt2);
+//
+//        System.out.println("D: "+encryptionManager.RSAdecrypt(encrypt2, 26483, 107221));
+
+//        String encryptedMessage = encryptionManager.RSAencrypt("ooh shaka laka oof 哈哈 🆒",410589,948667);
+//        System.out.println("Encrypted "+encryptedMessage);
+//        System.out.println("Decrypted "+encryptionManager.RSAdecrypt(encryptedMessage,171989,948667));
+//
+//        String symEncryptMessage = encryptionManager.symmetricEncrypt("a oof 哈哈 🆒",4);
+//        System.out.println("Encrypted: "+symEncryptMessage);
+        String symEncryptMessage = "66536903609360936023953619360536063618395360636183953618369636003610369036093013617369036903699317315365536183619361036993690360136193618301369736053696361836113606369830136963698301361036083";
+        System.out.println("Decrypted: "+ encryptionManager.symmetricDecrypt(symEncryptMessage,5));
 
 //        System.out.println("unicode "+Integer.toString('d'));
 
@@ -234,7 +249,7 @@ public class EncryptionManager {
 
 
     /**RSA encryption**/
-    public String RSAencrypt(String message, int publicKey, int publicModulusR){
+    public String RSAencrypt(String message, int givenPublicKey, int publicModulusR){
         /**prepare the message**/
         /*convert each letter in message convert char to unicode (denary)
           convert denary unicode to octal(0-7)
@@ -279,11 +294,11 @@ public class EncryptionManager {
         for (String messageBlock: plaintextBlocksList){
 //            System.out.println("messageBlock "+messageBlock);
             BigInteger messageBlockBigInt = new BigInteger(messageBlock);
-            BigInteger publicKeyBigInt = new BigInteger(String.valueOf(publicKey));
+            BigInteger publicKeyBigInt = new BigInteger(String.valueOf(givenPublicKey));
             BigInteger publicModulusBigInt = new BigInteger(String.valueOf(publicModulusR));
 
             BigInteger denaryValueEncryptedBlockBigInteger = messageBlockBigInt.modPow(publicKeyBigInt,publicModulusBigInt);
-//            System.out.println("denary encrypt block: "+ denaryValueEncryptedBlockBigInteger.toString());
+            System.out.println("denary encrypt block: "+ denaryValueEncryptedBlockBigInteger.toString());
             octalEncryptedText+= Integer.toOctalString(Integer.parseInt(denaryValueEncryptedBlockBigInteger.toString()))+"9";
         }
 
@@ -291,7 +306,7 @@ public class EncryptionManager {
     }
 
     //DECRYPTION
-    public String RSAdecrypt(String cipherMessage, int privateKey, int publicModulusR){
+    public String RSAdecrypt(String cipherMessage, int givenPrivateKey, int publicModulusR){
     /*1)remove 9s to obtain octal blocks
     2)convert from octal blocks to denary blocks
     3)**RSA decrypt to get denary plaintext - each block pad with 0's and get rid of 9's at end
@@ -305,15 +320,20 @@ public class EncryptionManager {
         int blockLength = String.valueOf(publicModulusR).length()-1; //ensure decrypted blocks are the original block length
 
         for (String octalBlock: octalCipherBlockList){
+            System.out.println("octal bb "+octalBlock);
             int denaryCipherBlock = Integer.parseInt(octalBlock,8);  //converts octal to denary
             BigInteger denaryCipherBlockBigInt = new BigInteger(String.valueOf(denaryCipherBlock));
-            BigInteger privateKeyBigInt = new BigInteger(String.valueOf(privateKey));
+            System.out.println("denary cipher "+denaryCipherBlockBigInt);
+            BigInteger privateKeyBigInt = new BigInteger(String.valueOf(givenPrivateKey));
             BigInteger publicModulusBigInt = new BigInteger(String.valueOf(publicModulusR));
 
             //Decryption: m=c^d mod r
             BigInteger octalValueDecryptedBlockBigInt = denaryCipherBlockBigInt.modPow(privateKeyBigInt,publicModulusBigInt);
             String octalValueDecryptedBlock = String.valueOf(octalValueDecryptedBlockBigInt);
+            System.out.println("before: "+denaryCipherBlockBigInt+"after: "+octalValueDecryptedBlockBigInt);
 
+            System.out.println("blocklen"+blockLength+"actual len"+octalValueDecryptedBlock.length());
+            System.out.println("acutal bloc"+octalValueDecryptedBlock);
             String padding = new String(new char[blockLength-String.valueOf(octalValueDecryptedBlock).length()]).replace("\0","0");
             //if the decrypted block is not the defined block length as it should be,
             //then some 0's may have been omitted at the start, which are lost due to mathematical redundancy
@@ -367,18 +387,16 @@ public class EncryptionManager {
     public String symmetricDecrypt(String cipherText, int symmetricKey){
         String decryptedUnicode="";
 
-        for (int index=0;index<cipherText.length();index++){
-//            System.out.println("cipher "+cipherText.charAt(index));
-            int digitPlain = Character.getNumericValue(cipherText.charAt(index))-symmetricKey;
+        for (int index=0;index<cipherText.length();index++){               //for every number in the ciphertext
+            int digitPlain = Character.getNumericValue(cipherText.charAt(index))-symmetricKey;     //shift the number back by the key
 
-            if (digitPlain<0){
+            if (digitPlain<0){                 //-1 loops back to 9 to keep it a single digit 0-9
                 digitPlain += 10;
             }
             decryptedUnicode+=String.valueOf(digitPlain);
-//            System.out.println("plain "+digitPlain);
         }
-//        System.out.println("Decrypted "+decryptedUnicode);
         String[] charactersUnicode = decryptedUnicode.split("8");
+        //strings of character unicode were indicated by '8' at end of an octal number
         String decryptedMessage ="";
 
         for(String charUnicode: charactersUnicode){    //for every string of numbers, each represents a character

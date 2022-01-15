@@ -56,7 +56,10 @@ public class ChatActivity extends AppCompatActivity {
     List<Chat> mChat;
     RecyclerView recyclerView;
 
-    String publicKeySelf,privateKeySelf,publicKeyOther;
+    Integer publicKeySelf,privateKeySelf,publicModulusSelf;
+    int symmetricKey;
+    String encryptedSymmetricKeySelf;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +98,46 @@ public class ChatActivity extends AppCompatActivity {
 
 
         /**getting the public and private keys**/
+        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists()) {
+                    privateKeySelf = Integer.parseInt(snapshot.child("privateKey").getValue().toString());
+                    publicKeySelf = Integer.parseInt(snapshot.child("publicKey").getValue().toString());
+                    publicModulusSelf = Integer.parseInt(snapshot.child("publicModulus").getValue().toString());
+
+                    Log.d(TAG, "onDataChange: key"+privateKeySelf+" "+publicKeySelf+" "+publicModulusSelf);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        /*get symmetric key*/
+        databaseReference.child("chats").child(chatID).child("users").child(mAuth.getCurrentUser().getUid()).child("chatSymmetricKey").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists() && privateKeySelf!=null){    //runs after keys retrieved
+                    encryptedSymmetricKeySelf = snapshot.getValue().toString();
+                    Log.d(TAG, "onDataChange: encrypt sym key "+encryptedSymmetricKeySelf);
+
+                    EncryptionManager encryptionManager = new EncryptionManager();
+                    String decryptedSymmetricKey = encryptionManager.RSAdecrypt(encryptedSymmetricKeySelf,privateKeySelf,publicModulusSelf);
+                    //asymmetrically decrypts to gets the randomly generated symmetric key created when new chat was made
+                    symmetricKey = Integer.parseInt(decryptedSymmetricKey);
+                    Log.d(TAG, "onDataChange: sym key "+symmetricKey);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
 
 
         /*sending a message*/
@@ -103,10 +146,12 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(!textBox.getText().toString().isEmpty()){    //checks if text box is not empty
 
+                    EncryptionManager encryptionManager = new EncryptionManager();
+                    String encryptedMessage = encryptionManager.symmetricEncrypt(textBox.getText().toString(),symmetricKey);
                     String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
                     Map<String,Object> messageData= new HashMap<>();
                     messageData.put("sender",mAuth.getCurrentUser().getUid());
-                    messageData.put("message",textBox.getText().toString());
+                    messageData.put("message",encryptedMessage);
                     messageData.put("timestamp",timestamp);
 
                     databaseReference.child("messages").child(chatID).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -200,18 +245,21 @@ public class ChatActivity extends AppCompatActivity {
         databaseReference.child("messages").child(chatID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if(snapshot.exists()){
+                if(snapshot.exists() && symmetricKey!=0){
 //
                     mChat.clear();  //clears array to repopulate it
 
                     for(DataSnapshot dataSnapshot: snapshot.getChildren()) {  //for each message
                         Log.d(TAG, "onDataChange: message "+dataSnapshot.getKey()+" vs "+displayFromMessageNumber);
                         if(Integer.parseInt(dataSnapshot.getKey())>=displayFromMessageNumber) {    //only show messages after or = this number
-                            String newMessage;
+                            String newMessage,decryptedMessage;
                             Chat newChat= new Chat();
-                            newMessage = dataSnapshot.child("message").getValue().toString();       //gets message from database
+                            newMessage = dataSnapshot.child("message").getValue().toString();       //gets encrypted message from database
 
-                            newChat.setMessage(newMessage);     //sets message and sender for new Chat
+                            EncryptionManager encryptionManager = new EncryptionManager();
+                            decryptedMessage = encryptionManager.symmetricDecrypt(newMessage,symmetricKey);    //symmetrically decrypts new message
+
+                            newChat.setMessage(decryptedMessage);     //sets message and sender for new Chat
                             newChat.setSender(dataSnapshot.child("sender").getValue().toString());
                             mChat.add(newChat);       //list of Chats
                         }

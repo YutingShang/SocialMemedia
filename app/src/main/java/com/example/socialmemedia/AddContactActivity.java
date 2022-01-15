@@ -49,7 +49,7 @@ public class AddContactActivity extends AppCompatActivity {
     DatabaseReference databaseReference;
     MaterialButton addContactButton;
     String userEmailToAdd, messageNumber;
-    int publicKeySelf, publicModulusSelf;
+    int publicKeySelf, publicModulusSelf,privateKeySelf;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +107,7 @@ public class AddContactActivity extends AppCompatActivity {
                             }
                             publicKeySelf = Integer.parseInt(dataSnapshot.child("publicKey").getValue().toString());
                             publicModulusSelf = Integer.parseInt(dataSnapshot.child("publicModulus").getValue().toString());
+                            privateKeySelf = Integer.parseInt(dataSnapshot.child("privateKey").getValue().toString());
                             //retrieves the public key for self
                         }
 
@@ -219,29 +220,46 @@ public class AddContactActivity extends AppCompatActivity {
                                                 messageNumber = "0";
                                             }
 
-                                            //creates a hashmap to add a new "chat" and "message" branch in realtime database quickly
-                                            String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-                                            String reWelcomeMessage ="Hello im back! ("+mAuth.getCurrentUser().getEmail()+")";
-
-                                            Map<String,Object> chatsUpdate = new HashMap<>();
-                                            chatsUpdate.put("chats/"+chatID+"/lastMessage",reWelcomeMessage);
-                                            chatsUpdate.put("chats/"+chatID+"/timestamp",timestamp);
-
-                                            chatsUpdate.put("messages/"+chatID+"/"+messageNumber+"/sender",mAuth.getCurrentUser().getUid());
-                                            chatsUpdate.put("messages/"+chatID+"/"+messageNumber+"/message",reWelcomeMessage);
-                                            chatsUpdate.put("messages/"+chatID+"/"+messageNumber+"/timestamp",timestamp);
-
-                                            //updates messages and last message in chats
-                                            databaseReference.updateChildren(chatsUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            //then retrieves encrypted symmetric key for self to send a welcome back message
+                                            databaseReference.child("chats").child(chatID).child("users").child(mAuth.getCurrentUser().getUid()).child("chatSymmetricKey").addListenerForSingleValueEvent(new ValueEventListener() {
                                                 @Override
-                                                public void onComplete(@NonNull  Task<Void> task) {
-                                                    Toast.makeText(AddContactActivity.this, "Chat with "+userEmailToAdd+" re-added", Toast.LENGTH_SHORT).show();
-                                                    Log.d(TAG, "onComplete: added chat to database");
+                                                public void onDataChange(@NonNull  DataSnapshot snapshot) {
+                                                    String encryptedSymmetricKeySelf = snapshot.getValue().toString();
+                                                    EncryptionManager encryptionManager = new EncryptionManager();
+                                                    int symmetricKey = Integer.parseInt(encryptionManager.RSAdecrypt(encryptedSymmetricKeySelf,privateKeySelf,publicModulusSelf));
+
+
+                                                    //creates a hashmap to add a new "chat" and "message" branch in realtime database quickly
+                                                    String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+                                                    String reWelcomeMessage ="Hello im back! ("+mAuth.getCurrentUser().getEmail()+")";
+                                                    String encryptedReWelcomeMessage = encryptionManager.symmetricEncrypt(reWelcomeMessage,symmetricKey);
+
+                                                    Map<String,Object> chatsUpdate = new HashMap<>();
+                                                    chatsUpdate.put("chats/"+chatID+"/lastMessage",reWelcomeMessage);   //keep this as un-encrypted, for ease to contact list activity
+                                                    chatsUpdate.put("chats/"+chatID+"/timestamp",timestamp);
+
+                                                    chatsUpdate.put("messages/"+chatID+"/"+messageNumber+"/sender",mAuth.getCurrentUser().getUid());
+                                                    chatsUpdate.put("messages/"+chatID+"/"+messageNumber+"/message",encryptedReWelcomeMessage);   //long term stored encrypted
+                                                    chatsUpdate.put("messages/"+chatID+"/"+messageNumber+"/timestamp",timestamp);
+
+                                                    //updates messages and last message in chats
+                                                    databaseReference.updateChildren(chatsUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull  Task<Void> task) {
+                                                            Toast.makeText(AddContactActivity.this, "Chat with "+userEmailToAdd+" re-added", Toast.LENGTH_SHORT).show();
+                                                            Log.d(TAG, "onComplete: added chat to database");
+                                                        }
+                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Log.d(TAG, "onFailure: failed to add chat to database. "+e.getMessage());
+                                                        }
+                                                    });
                                                 }
-                                            }).addOnFailureListener(new OnFailureListener() {
+
                                                 @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Log.d(TAG, "onFailure: failed to add chat to database. "+e.getMessage());
+                                                public void onCancelled(@NonNull DatabaseError error) {
+
                                                 }
                                             });
 
@@ -283,10 +301,14 @@ public class AddContactActivity extends AppCompatActivity {
 
                         //creates a hashmap to add a new "chat" and "message" branch in realtime database quickly
                         String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-                        String welcomeMessage ="Hello this is "+mAuth.getCurrentUser().getEmail();
 
                         EncryptionManager encryptionManager = new EncryptionManager();
                         int symmetricKeyChat = encryptionManager.getRandInt(1,9);  //generates random symmetric key num between 1-9
+                        String welcomeMessage ="Hello this is "+mAuth.getCurrentUser().getEmail();
+                        String encryptedWelcomeMessage = encryptionManager.symmetricEncrypt(welcomeMessage,symmetricKeyChat);
+
+
+                        System.out.println("sym key"+symmetricKeyChat);
                         int publicKeyOther = Integer.parseInt(detailsContactsInDatabaseArray.get(emailAddressesInDatabaseArray.indexOf(userEmailToAdd)).get(2));
                         int publicModulusOther = Integer.parseInt(detailsContactsInDatabaseArray.get(emailAddressesInDatabaseArray.indexOf(userEmailToAdd)).get(3));
                         //gets public key & modulus of other user from the 2D array, which was retrieved from the database
@@ -305,7 +327,7 @@ public class AddContactActivity extends AppCompatActivity {
                         chatsUpdate.put("chats/"+chatID+"/timestamp",timestamp);
 
                         chatsUpdate.put("messages/"+chatID+"/0/sender",mAuth.getCurrentUser().getUid());
-                        chatsUpdate.put("messages/"+chatID+"/0/message",welcomeMessage);
+                        chatsUpdate.put("messages/"+chatID+"/0/message",encryptedWelcomeMessage);
                         chatsUpdate.put("messages/"+chatID+"/0/timestamp",timestamp);
 
                         //adding all atomic updates to chats and messages ~ triggers listener 2 for "chats"

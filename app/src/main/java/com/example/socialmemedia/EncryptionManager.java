@@ -42,6 +42,10 @@ public class EncryptionManager {
         System.out.println("Encrypted "+encryptedMessage);
         System.out.println("Decrypted "+encryptionManager.RSAdecrypt(encryptedMessage,171989,948667));
 
+        String symEncryptMessage = encryptionManager.symmetricEncrypt("a oof 哈哈 🆒",4);
+        System.out.println("Encrypted: "+symEncryptMessage);
+        System.out.println("Decrypted: "+ encryptionManager.symmetricDecrypt(symEncryptMessage,4));
+
 //        System.out.println("unicode "+Integer.toString('d'));
 
 //        String.valueOf('h').codePoints().mapToObj(Integer::toOctalString).forEach(System.out::println);
@@ -66,7 +70,7 @@ public class EncryptionManager {
 
         primeList=new ArrayList<>();
         setPrimeList();
-        System.out.println("prime list: "+primeList);
+//        System.out.println("prime list: "+primeList);
 
         prime1 = primeList.get(getRandInt(1,primeList.size()-1));
         do{
@@ -85,7 +89,7 @@ public class EncryptionManager {
 
         coprimeList = new ArrayList<>();
         coprimeList = getCoprimeList(totient,getPrimeFactors(totient));
-        System.out.println("coprime list: "+coprimeList);
+//        System.out.println("coprime list: "+coprimeList);
 
         //e is a coprime of the totient, so gcd(e,phi)=1
         int count=0;
@@ -327,12 +331,64 @@ public class EncryptionManager {
         ArrayList<String> octalCharacterUnicodeList = new ArrayList<>(Arrays.asList(octalDecryptedText.split("8")));
         String decryptedTextMessage = "";
 
-        for(String characterUnicode: octalCharacterUnicodeList){
+        for(String characterUnicode: octalCharacterUnicodeList){       //for every character
             int denaryUnicode = Integer.parseInt(characterUnicode,8);   //convert octal to denary
             decryptedTextMessage += (char) denaryUnicode;    //convert unicode to character
         }
 
         return decryptedTextMessage;
+    }
+
+    public String symmetricEncrypt(String message, int symmetricKey){
+        String encryptedMessage = "";
+        String octalMessageUnicode="";
+
+        for (int charIndex=0;charIndex<message.length();charIndex++) {   //for every letter in message
+            String charUnicode = Integer.toOctalString(message.charAt(charIndex));  //convert to unicode, then convert to octal (0-7)
+//            System.out.println("char unicode octal: "+charUnicode);
+            // append an '8' at the end to indicate each character, then add to string
+            octalMessageUnicode +=charUnicode + "8";
+        }
+
+        for (int index=0;index<octalMessageUnicode.length();index++){      //for every number in unicode string
+//            System.out.println("int plain "+octalMessageUnicode.charAt(index));
+            int digitCipher = Character.getNumericValue(octalMessageUnicode.charAt(index)) + symmetricKey;      //shift number by key
+
+            if (digitCipher>9){
+                digitCipher -= 10;                         //mod 10 to keep it a single digit
+            }
+            encryptedMessage+=String.valueOf(digitCipher);
+//            System.out.println("int cipher "+digitCipher);
+        }
+        return encryptedMessage;    //a string of numbers with digits shifted by the key
+
+    }
+
+    public String symmetricDecrypt(String cipherText, int symmetricKey){
+        String decryptedUnicode="";
+
+        for (int index=0;index<cipherText.length();index++){
+//            System.out.println("cipher "+cipherText.charAt(index));
+            int digitPlain = Character.getNumericValue(cipherText.charAt(index))-symmetricKey;
+
+            if (digitPlain<0){
+                digitPlain += 10;
+            }
+            decryptedUnicode+=String.valueOf(digitPlain);
+//            System.out.println("plain "+digitPlain);
+        }
+//        System.out.println("Decrypted "+decryptedUnicode);
+        String[] charactersUnicode = decryptedUnicode.split("8");
+        String decryptedMessage ="";
+
+        for(String charUnicode: charactersUnicode){    //for every string of numbers, each represents a character
+//            System.out.println("char "+charUnicode);
+            decryptedMessage += (char)Integer.parseInt(charUnicode,8);
+            //convert from octal to denary unicode then to corresponding character
+        }
+
+        return decryptedMessage;
+
     }
 
 

@@ -147,7 +147,9 @@ public class ChatActivity extends AppCompatActivity {
                 if(!textBox.getText().toString().isEmpty()){    //checks if text box is not empty
 
                     EncryptionManager encryptionManager = new EncryptionManager();
+                    //encrypts message to send
                     String encryptedMessage = encryptionManager.symmetricEncrypt(textBox.getText().toString(),symmetricKey);
+
                     String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
                     Map<String,Object> messageData= new HashMap<>();
                     messageData.put("sender",mAuth.getCurrentUser().getUid());

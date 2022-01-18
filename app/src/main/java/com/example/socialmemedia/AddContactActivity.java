@@ -40,7 +40,8 @@ public class AddContactActivity extends AppCompatActivity {
     Toolbar toolbar;
     SearchView searchView;
     ListView listView;
-    ArrayList<ArrayList<String>> detailsContactsInDatabaseArray;   //stores uid, email & public key & modulus of all contacts [("uid1","email1","publicKey","publicModulus"),...]
+    ArrayList<ArrayList<String>> detailsContactsInDatabaseArray;   //stores uid, email & public key & modulus of all contacts
+                                                                    // [("uid1","email1","publicKey","publicModulus"),...]
     ArrayList<String> filteredContactsArray;             //queried contacts
     ArrayList<String> emailAddressesInDatabaseArray;     //stores email addresses of all contacts
     ArrayList<String> alreadyAddedContactsUidArray;      //stores uid of current contacts
@@ -78,7 +79,7 @@ public class AddContactActivity extends AppCompatActivity {
         alreadyAddedContactsUidArray = new ArrayList<String>();
 
 
-        /*retrieves all user emails and uid from databse*/
+        /*retrieves all user emails, uid, public key and modulus from databse*/
         databaseReference.child("users").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -107,7 +108,7 @@ public class AddContactActivity extends AppCompatActivity {
                             }
                             publicKeySelf = Integer.parseInt(dataSnapshot.child("publicKey").getValue().toString());
                             publicModulusSelf = Integer.parseInt(dataSnapshot.child("publicModulus").getValue().toString());
-                            privateKeySelf = Integer.parseInt(dataSnapshot.child("privateKey").getValue().toString());
+                            privateKeySelf = Integer.parseInt(dataSnapshot.child("privateKey").getValue().toString());    //also gets private key
                             //retrieves the public key for self
                         }
 
@@ -221,7 +222,8 @@ public class AddContactActivity extends AppCompatActivity {
                                             }
 
                                             //then retrieves encrypted symmetric key for self to send a welcome back message
-                                            databaseReference.child("chats").child(chatID).child("users").child(mAuth.getCurrentUser().getUid()).child("chatSymmetricKey").addListenerForSingleValueEvent(new ValueEventListener() {
+                                            databaseReference.child("chats").child(chatID).child("users").child(mAuth.getCurrentUser().getUid()).
+                                                    child("chatSymmetricKey").addListenerForSingleValueEvent(new ValueEventListener() {
                                                 @Override
                                                 public void onDataChange(@NonNull  DataSnapshot snapshot) {
                                                     String encryptedSymmetricKeySelf = snapshot.getValue().toString();

@@ -53,7 +53,9 @@ public class MemeMenuActivity extends AppCompatActivity {
         adapter = new MenuCardAdapter(this,titles,images);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,2,GridLayoutManager.VERTICAL,false);
+
         recyclerView.setLayoutManager(gridLayoutManager);
+        recyclerView.addItemDecoration(new GridSpacingItemDecoration(2,25,true,0));
         recyclerView.setHasFixedSize(true);
 
         recyclerView.setAdapter(adapter);

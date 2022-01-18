@@ -70,7 +70,7 @@ public class EncryptionManager {
 //        System.out.println("e: "+encryptionManager.getPublicKey());
 //        System.out.println("d: "+encryptionManager.getPrivateKey());
 //        System.out.println("gcd: "+encryptionManager.getGCD(encryptionManager.publicKey, encryptionManager.privateKey));
-    }
+    }  //for testing
 
     private ArrayList<Integer> primeList,coprimeList;
     private int[] markedCompositeList;
@@ -82,50 +82,38 @@ public class EncryptionManager {
         for(int i=0;i<MAX;i++){
             markedCompositeList[i]=0;
         }
-
         primeList=new ArrayList<>();
         setPrimeList();
-//        System.out.println("prime list: "+primeList);
 
-        prime1 = primeList.get(getRandInt(1,primeList.size()-1));
+        prime1 = primeList.get(getRandInt(1,primeList.size()-1));    //gets random prime number
         do{
             prime2 = primeList.get(getRandInt(1,primeList.size()-1));   //regenerate q so that p!=q
 
         }while(prime1==prime2);
-        System.out.println("p="+prime1+"\nq="+prime2);
-//        prime1=5;
-//        prime2=7;
-//        publicKey =11;
+
 
         publicModulus = prime1*prime2;
-        System.out.println("r: "+publicModulus);
         totient = (prime1-1)*(prime2-1);
-        System.out.println("totient: "+totient);
 
         coprimeList = new ArrayList<>();
         coprimeList = getCoprimeList(totient,getPrimeFactors(totient));
-//        System.out.println("coprime list: "+coprimeList);
 
-        //e is a coprime of the totient, so gcd(e,phi)=1
+
         int count=0;
-        do {
-            publicKey = coprimeList.get(getRandInt(2, coprimeList.size()) - 1);
+        do {             //repeats to get different public and private keys i.e e!=d, but stop if can't find one
+            publicKey = coprimeList.get(getRandInt(2, coprimeList.size()) - 1);   //e is a coprime of the totient, so gcd(e,phi)=1
             //e>1 because 1 is coprime with everything
 
             privateKey = getLinearCombinationCoefficients(totient, publicKey)[1];
             if (privateKey < 0) {
                 privateKey += totient;   //equivalent positive value (mod phi)
             }
-
             count++;
-        /*d=coefficients[1] because d is inverse of e mod phi: e*d=1 (mod phi)
-          and when you take the mod phi of xphi+ye=1, you are left with ye,
-          e<phi so d=y the smaller number coefficient at index 1
-         */
+            /*d=coefficients[1] because d is inverse of e mod phi: e*d=1 (mod phi)
+              and when you take the mod phi of xphi+ye=1, you are left with ye,
+              e<phi so d=y the smaller number coefficient at index 1
+             */
         }while (privateKey==publicKey &&count<10);       //count less than 10 to stop infinite loop
-        System.out.println("e: " + publicKey);
-        System.out.println("d: " + privateKey);
-
     }
 
 
@@ -137,7 +125,6 @@ public class EncryptionManager {
         int randomInt = (int)Math.round(randomInRange);        //rounding allows both bounds to be included
 
         return randomInt;
-
     }
 
     public int getPrivateKey(){
@@ -226,7 +213,6 @@ public class EncryptionManager {
             int smallNumCoefficient = -quotient;
 
             int[] coefficients = {bigNumCoefficient,smallNumCoefficient};
-//            System.out.println("coefficients: "+Arrays.toString(coefficients));
             return coefficients;
 
         }else{         //recurse
@@ -241,8 +227,6 @@ public class EncryptionManager {
             int smallNumCoefficient = coefficientsPrevious[1]*-quotient + coefficientsPrevious[0];
 
             int[] newCoefficients = {bigNumCoefficient,smallNumCoefficient};
-
-//            System.out.println("coefficients: "+Arrays.toString(newCoefficients));
             return newCoefficients;
         }
     }
@@ -292,7 +276,6 @@ public class EncryptionManager {
          */
         String octalEncryptedText ="";
         for (String messageBlock: plaintextBlocksList){
-//            System.out.println("messageBlock "+messageBlock);
             BigInteger messageBlockBigInt = new BigInteger(messageBlock);
             BigInteger publicKeyBigInt = new BigInteger(String.valueOf(givenPublicKey));
             BigInteger publicModulusBigInt = new BigInteger(String.valueOf(publicModulusR));
@@ -301,7 +284,6 @@ public class EncryptionManager {
             System.out.println("denary encrypt block: "+ denaryValueEncryptedBlockBigInteger.toString());
             octalEncryptedText+= Integer.toOctalString(Integer.parseInt(denaryValueEncryptedBlockBigInteger.toString()))+"9";
         }
-
         return octalEncryptedText;
     }
 
@@ -312,18 +294,15 @@ public class EncryptionManager {
     3)**RSA decrypt to get denary plaintext - each block pad with 0's and get rid of 9's at end
     4)split using 8's to get separate octal unicode characters
     5)convert octal to denary unicode
-    6)convert to symbols
-     */
+    6)convert to symbols*/
         ArrayList<String> octalCipherBlockList = new ArrayList<>( Arrays.asList(cipherMessage.split("9")));
 
         String octalDecryptedText="";
         int blockLength = String.valueOf(publicModulusR).length()-1; //ensure decrypted blocks are the original block length
 
         for (String octalBlock: octalCipherBlockList){
-            System.out.println("octal bb "+octalBlock);
             int denaryCipherBlock = Integer.parseInt(octalBlock,8);  //converts octal to denary
             BigInteger denaryCipherBlockBigInt = new BigInteger(String.valueOf(denaryCipherBlock));
-            System.out.println("denary cipher "+denaryCipherBlockBigInt);
             BigInteger privateKeyBigInt = new BigInteger(String.valueOf(givenPrivateKey));
             BigInteger publicModulusBigInt = new BigInteger(String.valueOf(publicModulusR));
 
@@ -355,7 +334,6 @@ public class EncryptionManager {
             int denaryUnicode = Integer.parseInt(characterUnicode,8);   //convert octal to denary
             decryptedTextMessage += (char) denaryUnicode;    //convert unicode to character
         }
-
         return decryptedTextMessage;
     }
 
@@ -365,20 +343,16 @@ public class EncryptionManager {
 
         for (int charIndex=0;charIndex<message.length();charIndex++) {   //for every letter in message
             String charUnicode = Integer.toOctalString(message.charAt(charIndex));  //convert to unicode, then convert to octal (0-7)
-//            System.out.println("char unicode octal: "+charUnicode);
             // append an '8' at the end to indicate each character, then add to string
             octalMessageUnicode +=charUnicode + "8";
         }
-
         for (int index=0;index<octalMessageUnicode.length();index++){      //for every number in unicode string
-//            System.out.println("int plain "+octalMessageUnicode.charAt(index));
             int digitCipher = Character.getNumericValue(octalMessageUnicode.charAt(index)) + symmetricKey;      //shift number by key
 
             if (digitCipher>9){
                 digitCipher -= 10;                         //mod 10 to keep it a single digit
             }
             encryptedMessage+=String.valueOf(digitCipher);
-//            System.out.println("int cipher "+digitCipher);
         }
         return encryptedMessage;    //a string of numbers with digits shifted by the key
 
@@ -400,7 +374,6 @@ public class EncryptionManager {
         String decryptedMessage ="";
 
         for(String charUnicode: charactersUnicode){    //for every string of numbers, each represents a character
-//            System.out.println("char "+charUnicode);
             decryptedMessage += (char)Integer.parseInt(charUnicode,8);
             //convert from octal to denary unicode then to corresponding character
         }
@@ -408,7 +381,4 @@ public class EncryptionManager {
         return decryptedMessage;
 
     }
-
-
-
 }

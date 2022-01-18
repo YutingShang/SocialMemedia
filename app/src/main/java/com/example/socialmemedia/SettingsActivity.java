@@ -2,6 +2,7 @@ package com.example.socialmemedia;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,23 +24,26 @@ import static android.content.ContentValues.TAG;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    ImageButton backButton;
     Button signOut,deleteAccount;
     FirebaseAuth mAuth;
     DatabaseReference databaseReference;
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(new View.OnClickListener() {
+
+        toolbar= findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(SettingsActivity.this, ContactListActivity.class);
+                Intent intent= new Intent(SettingsActivity.this, ContactListActivity.class);
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_right);
+                //ContactListActivity slide in from left, AddContactActivity slide out from right
             }
         });
 

@@ -134,6 +134,7 @@ public class signUpFragment extends Fragment {
                         newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/name",getString(name).toLowerCase());
 
                         EncryptionManager encryptionManager = new EncryptionManager();
+                        //generates a random private & public key and public modulus to store in the database
                         newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/privateKey",encryptionManager.getPrivateKey());
                         newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/publicKey",encryptionManager.getPublicKey());
                         newUserUpdate.put("users/"+mAuth.getCurrentUser().getUid()+"/publicModulus",encryptionManager.getPublicModulus());

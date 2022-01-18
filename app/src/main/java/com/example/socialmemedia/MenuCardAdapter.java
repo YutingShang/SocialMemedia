@@ -1,5 +1,7 @@
 package com.example.socialmemedia;
 
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.media.Image;
@@ -64,8 +66,7 @@ public class MenuCardAdapter extends RecyclerView.Adapter<MenuCardAdapter.MyView
                 @Override
                 public void onClick(View v) {
 //                    Toast.makeText(v.getContext(),"Clicked on Meme ",Toast.LENGTH_SHORT).show();   //doesn't work?
-                    Intent intent = new Intent(v.getContext(),MemeFeedActivity.class).addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-
+                    Intent intent = new Intent(v.getContext(),MemeFeedActivity.class);//.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                     v.getContext().startActivity(intent);
 
                 }

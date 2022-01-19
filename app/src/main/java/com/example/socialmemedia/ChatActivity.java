@@ -156,6 +156,7 @@ public class ChatActivity extends AppCompatActivity {
                     messageData.put("message",encryptedMessage);
                     messageData.put("timestamp",timestamp);
 
+                    //gets new message number first
                     databaseReference.child("messages").child(chatID).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {    //all messages in chat
@@ -191,6 +192,62 @@ public class ChatActivity extends AppCompatActivity {
                                         @Override
                                         public void onCancelled(@NonNull DatabaseError error) {
 
+                                        }
+                                    });
+
+                                    //check if other user is on detox mode
+                                    databaseReference.child("users").child(contactUid).child("detox").addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                            if(snapshot.exists()){
+                                                String detoxModeString = snapshot.getValue().toString();   //gets detox value of the other user
+
+                                                if(detoxModeString.equals("true")){   //if detox mode is true
+                                                    //encrypts automatic response message
+                                                    String botMessage = "Sorry I'm taking some time away from Social Memedia right now. If you still need to contact me, please email me at :"+contactEmail;
+                                                    String encryptedMessage = encryptionManager.symmetricEncrypt(botMessage,symmetricKey);
+
+                                                    String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+                                                    Map<String,Object> messageData= new HashMap<>();
+                                                    messageData.put("sender",contactUid);    //so it appears like its sent by the other person
+                                                    messageData.put("message",encryptedMessage);
+                                                    messageData.put("timestamp",timestamp);
+
+                                                    //add this automatic message to the next message number in the database
+                                                    databaseReference.child("messages").child(chatID).child(String.valueOf(messageNumber+1)).setValue(messageData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            Log.d(TAG, "onComplete: bot message sent");
+                                                        }
+                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Log.d(TAG, "onFailure: bot message not sent. "+e.getMessage());
+                                                        }
+                                                    });
+
+                                                    //updates the last message for this chatID under "chats"
+                                                    databaseReference.child("chats").child(chatID).child("lastMessage").setValue(botMessage);
+                                                    databaseReference.child("chats").child(chatID).child("timestamp").setValue(timestamp).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull  Task<Void> task) {
+                                                            Log.d(TAG, "onComplete: last message updated");
+                                                        }
+                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull  Exception e) {
+                                                            Log.d(TAG, "onFailure: last message not updated. "+e.getMessage());
+                                                        }
+                                                    });
+
+
+                                                }
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
+                                            Log.d(TAG, "onCancelled: error in retrieving detox data from database. "+error.getMessage());
                                         }
                                     });
 

@@ -14,4 +14,6 @@
     <string name="delete_account">Delete account</string>
     <string name="deletion_instructions">To delete your account, please confirm your password</string>
     <string name="resend_verification"><u>resend email verification</u></string>
+    <string name="deletion_information">To permanently delete your account</string>
+    <string name="detox_information">Automatic responses will be sent to new chats if detox mode is switched on. Important enquiries will be directed to your email</string>
 </resources>

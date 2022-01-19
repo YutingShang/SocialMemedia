@@ -7,7 +7,9 @@
     <dimen name="cardWidth">150dp</dimen>
     <dimen name="imageSize">120dp</dimen>
     <dimen name="elevation">8dp</dimen>
-    <dimen name="textSize">18dp</dimen>
+    <dimen name="textSize">18sp</dimen>
+    <dimen name="smallerTextSize">16sp</dimen>
     <dimen name="cardHeight">260dp</dimen>
+    <dimen name="listItemHeight">45dp</dimen>
 
 </resources>

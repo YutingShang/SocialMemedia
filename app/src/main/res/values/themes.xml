@@ -14,10 +14,19 @@
         <!-- Customize your theme here. -->
         <item name="android:textColor">@color/charcoal</item>
 
+        <item name="listChoiceBackgroundIndicator">@color/off_white</item>
+
     </style>
 
     <style name="CardTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:background">@color/off_white</item>
 
+    </style>
+
+
+    <style name="SwitchTheme" parent="Widget.AppCompat.CompoundButton.Switch">
+        <item name="colorAccent">@color/pastel_red</item>
+        <item name="colorSwitchThumbNormal">@color/fresco_pink</item>
+<!--        color accent is on, thumb normal is off-->
     </style>
 </resources>

@@ -15,12 +15,11 @@ import java.util.List;
 
 public class ImageFeedAdapter extends RecyclerView.Adapter<ImageFeedAdapter.ViewHolder> {
     private Context context;
-    private List<Bitmap> images;   //drawable reference is Integer?
+    private List<Bitmap> images;
 
     public ImageFeedAdapter(Context context, List<Bitmap> images){
         this.context=context;
         this.images=images;
-
     }
 
     @NonNull
@@ -39,7 +38,6 @@ public class ImageFeedAdapter extends RecyclerView.Adapter<ImageFeedAdapter.View
     public void onBindViewHolder(@NonNull ImageFeedAdapter.ViewHolder holder, int position) {
 
         holder.imageView.setImageBitmap(images.get(position));
-
     }
 
 

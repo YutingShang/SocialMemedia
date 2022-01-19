@@ -13,5 +13,11 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
         <item name="android:textColor">@color/charcoal</item>
+
+    </style>
+
+    <style name="CardTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:background">@color/off_white</item>
+
     </style>
 </resources>

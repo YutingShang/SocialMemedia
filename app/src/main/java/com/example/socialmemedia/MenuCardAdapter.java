@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.media.Image;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,21 +17,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 public class MenuCardAdapter extends RecyclerView.Adapter<MenuCardAdapter.MyViewHolder> {
 
     private Context context;
-    private List<String> titles;
-    private List<Integer> images;
+    private List<Bitmap> images;   //images on each card
+    private List<String> categories;
 
-    public MenuCardAdapter(Context context, List<String> titles, List<Integer> images){
+    public MenuCardAdapter(Context context, List<Bitmap> images, List<String> categories){
         this.context=context;
-        this.titles=titles;
         this.images=images;
-
+        this.categories = categories;
     }
 
     @NonNull
@@ -40,37 +44,48 @@ public class MenuCardAdapter extends RecyclerView.Adapter<MenuCardAdapter.MyView
 
     @Override
     public int getItemCount() {
-        return titles.size();
+        return images.size();
     }
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
 
-        holder.textView.setText(titles.get(position));
-        holder.imageView.setImageResource(images.get(position));
+        holder.imageView.setImageBitmap(images.get(position));
 
+        //when one of the cards is clicked, the correct category and image url is identified and sent to meme feed
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(),MemeFeedActivity.class);
+                intent.putExtra("category",categories.get(position));  //sends the category name to the meme feed activity
+
+                Uri imageUri = getImageUri(v.getContext(), images.get(position));   //convert bitmap to uri
+                intent.putExtra("uri",imageUri.toString());
+                v.getContext().startActivity(intent);
+
+            }
+        });
+
+    }
+
+    public Uri getImageUri(Context inContext, Bitmap inImage) {      //gets uri of bitmap image
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+        return Uri.parse(path);
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder{
 
         ImageView imageView;
-        TextView textView;
+        CardView cardView;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
 
             imageView = itemView.findViewById(R.id.imageView);
-            textView =itemView.findViewById(R.id.textView);
+            cardView = itemView.findViewById(R.id.cardView);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-//                    Toast.makeText(v.getContext(),"Clicked on Meme ",Toast.LENGTH_SHORT).show();   //doesn't work?
-                    Intent intent = new Intent(v.getContext(),MemeFeedActivity.class);//.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                    v.getContext().startActivity(intent);
-
-                }
-            });
         }
     }
 }

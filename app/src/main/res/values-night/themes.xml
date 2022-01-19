@@ -14,5 +14,11 @@
         <!-- Customize your theme here. -->
         <item name="android:colorBackground">@color/charcoal</item>
         <item name="android:textColor">@color/white</item>
+
+    </style>
+
+    <style name="CardTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:background">@color/transparent</item>
+
     </style>
 </resources>

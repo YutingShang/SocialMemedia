@@ -21,6 +21,7 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.util.List;
 
 public class MenuCardAdapter extends RecyclerView.Adapter<MenuCardAdapter.MyViewHolder> {
@@ -59,8 +60,22 @@ public class MenuCardAdapter extends RecyclerView.Adapter<MenuCardAdapter.MyView
                 Intent intent = new Intent(v.getContext(),MemeFeedActivity.class);
                 intent.putExtra("category",categories.get(position));  //sends the category name to the meme feed activity
 
-                Uri imageUri = getImageUri(v.getContext(), images.get(position));   //convert bitmap to uri
-                intent.putExtra("uri",imageUri.toString());
+                try{
+                    //write file, save bitmap to disk
+                    String filename = "meme_bitmap.png";
+                    FileOutputStream stream = v.getContext().openFileOutput(filename,Context.MODE_PRIVATE);
+                    images.get(position).compress(Bitmap.CompressFormat.PNG,100,stream  );
+
+                    //cleanup - recycle bitmap
+                    stream.close();
+
+                    //Add to intent
+                    intent.putExtra("bitmap",filename);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                //start intent
                 v.getContext().startActivity(intent);
 
             }
@@ -68,12 +83,6 @@ public class MenuCardAdapter extends RecyclerView.Adapter<MenuCardAdapter.MyView
 
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {      //gets uri of bitmap image
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
-    }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder{
 

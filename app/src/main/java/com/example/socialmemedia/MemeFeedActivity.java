@@ -32,6 +32,8 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,25 +70,31 @@ public class MemeFeedActivity extends AppCompatActivity {
         });
 
 
-        storage = FirebaseStorage.getInstance();
-        recyclerView = findViewById(R.id.recylerView);
-        images = new ArrayList<>();
-
         memeCategory = getIntent().getStringExtra("category");   //gets the category for this feed
         Toast.makeText(this, memeCategory, Toast.LENGTH_SHORT).show();
         Log.d(TAG, "onCreate: meme category "+memeCategory);
 
+        images = new ArrayList<>();
+        firstBitmap = null;
+        String filename = getIntent().getStringExtra("bitmap");
+        try{
+            FileInputStream stream = this.openFileInput(filename);       //retrieves stored bitmap file
+            firstBitmap = BitmapFactory.decodeStream(stream);           //decodes to bitmap
+            images.add(firstBitmap);
+            stream.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
-        Uri uri = Uri.parse(getIntent().getStringExtra("uri"));  //gets uri of image clicked on
-        try {
-            if(  uri!=null   ){
-                firstBitmap = MediaStore.Images.Media.getBitmap(getContentResolver() , uri);   //convert uri to bitmap
-                images.add(firstBitmap);         //first bitmap to display at top of recycler view
-            }
-        }
-        catch (Exception e) {
-            Log.d(TAG, "onCreate: error in converting uri to bitmap "+e.getMessage());
-        }
+        //initialisations
+        storage = FirebaseStorage.getInstance();
+        recyclerView = findViewById(R.id.recylerView);
+        imageFeedAdapter = new ImageFeedAdapter(MemeFeedActivity.this,images);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(MemeFeedActivity.this);
+
+        //set recyclerView adapters and layout
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setAdapter(imageFeedAdapter);
 
 
         databaseReference = FirebaseDatabase.getInstance().getReference();
@@ -106,29 +114,13 @@ public class MemeFeedActivity extends AppCompatActivity {
                                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                                     Bitmap thisBitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());        //convert filepath to bitmap
 
-                                    Uri uri = getImageUri(MemeFeedActivity.this,thisBitmap);   //convert bitmap to uri
-                                    try {
-                                        if(uri!=null){
-                                            Bitmap newBitmap = MediaStore.Images.Media.getBitmap(getContentResolver() , uri);   //convert uri to bitmap
-                                            if (newBitmap.sameAs(firstBitmap)){
-                                                Log.d(TAG, "onSuccess: same");
-                                            }else{
-                                                Log.d(TAG, "onSuccess: same NOT");
-                                                images.add(thisBitmap);    //adds to arraylist if image is different to the first
-                                            }
-                                        }
+                                    //check bitmap not the same as first one
+                                    if(!thisBitmap.sameAs(firstBitmap)){
+                                        images.add(thisBitmap);
+
+                                        //update recyclerView with newly loaded meme
+                                        imageFeedAdapter.notifyItemInserted(images.size()-1);
                                     }
-                                    catch (Exception e) {
-                                        Log.d(TAG, "onCreate: error in converting uri to bitmap "+e.getMessage());
-                                    }
-
-                                    imageFeedAdapter = new ImageFeedAdapter(MemeFeedActivity.this,images);
-
-                                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(MemeFeedActivity.this);
-                                    recyclerView.setLayoutManager(linearLayoutManager);
-                                    recyclerView.setAdapter(imageFeedAdapter);
-
-
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                                 @Override
@@ -139,12 +131,8 @@ public class MemeFeedActivity extends AppCompatActivity {
                         }catch (IOException e){
                             e.printStackTrace();
                         }
-
-
                     }
-
                 }
-
             }
 
             @Override
@@ -153,13 +141,6 @@ public class MemeFeedActivity extends AppCompatActivity {
             }
         });
 
-
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
-    }
 }

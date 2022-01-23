@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/fresco_blue"
-        app:itemBackground="@color/tab_color"
+        app:itemBackground="@drawable/tab_colour"
         app:itemIconSize="@dimen/iconSmall"
         app:itemIconTint="@drawable/selector"
         app:itemTextColor="@drawable/selector"
